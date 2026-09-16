@@ -1,0 +1,1870 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kitab Shop — QA Test Plan</title>
+<style>
+:root{
+  --bg:#f6f7f9; --panel:#ffffff; --ink:#15181d; --muted:#5d6570; --faint:#8b939e;
+  --line:#e2e5ea; --line-soft:#eef0f3; --accent:#1f4fd8; --accent-soft:#eaf0ff;
+  --pass:#0f7a3d; --pass-bg:#e7f6ec; --fail:#b3261e; --fail-bg:#fdecea;
+  --block:#96620a; --block-bg:#fdf3e2; --na:#6b7280; --na-bg:#eef0f3;
+  --crit:#b3261e; --high:#96620a; --med:#5d6570;
+  --code-bg:#f2f4f7; --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+:root:not([data-theme="light"]){
+  @media (prefers-color-scheme: dark){
+    --bg:#0f1216; --panel:#161a20; --ink:#e7eaee; --muted:#9aa3ae; --faint:#6f7883;
+    --line:#252b33; --line-soft:#1d222a; --accent:#7ea2ff; --accent-soft:#1a2235;
+    --pass:#5fd08a; --pass-bg:#12291c; --fail:#ff8a80; --fail-bg:#2c1614;
+    --block:#e8b464; --block-bg:#2b2114; --na:#9aa3ae; --na-bg:#1d222a;
+    --crit:#ff8a80; --high:#e8b464; --med:#9aa3ae; --code-bg:#11151a;
+  }
+}
+[data-theme="dark"]{
+  --bg:#0f1216; --panel:#161a20; --ink:#e7eaee; --muted:#9aa3ae; --faint:#6f7883;
+  --line:#252b33; --line-soft:#1d222a; --accent:#7ea2ff; --accent-soft:#1a2235;
+  --pass:#5fd08a; --pass-bg:#12291c; --fail:#ff8a80; --fail-bg:#2c1614;
+  --block:#e8b464; --block-bg:#2b2114; --na:#9aa3ae; --na-bg:#1d222a;
+  --crit:#ff8a80; --high:#e8b464; --med:#9aa3ae; --code-bg:#11151a;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font:14px/1.55 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--accent)}
+code,kbd{font-family:var(--mono);font-size:12.5px}
+
+/* ---------- layout ---------- */
+.app{display:grid;grid-template-columns:248px 1fr;min-height:100vh}
+.side{background:var(--panel);border-right:1px solid var(--line);position:sticky;top:0;height:100vh;overflow-y:auto;padding-block:14px}
+.brand{padding:0 16px 12px;border-bottom:1px solid var(--line-soft);margin-bottom:8px}
+.brand h1{margin:0;font-size:14px;letter-spacing:-.01em}
+.brand p{margin:3px 0 0;font-size:11.5px;color:var(--faint)}
+.nav{list-style:none;margin:0;padding:0 8px}
+.nav li{margin:1px 0}
+.nav button{width:100%;display:flex;align-items:center;gap:8px;background:none;border:0;color:var(--muted);
+  font:inherit;font-size:12.8px;text-align:left;padding:6px 8px;border-radius:6px;cursor:pointer}
+.nav button:hover{background:var(--line-soft);color:var(--ink)}
+.nav button[aria-current="true"]{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.nav .n{margin-left:auto;font-size:10.5px;color:var(--faint);font-variant-numeric:tabular-nums}
+.nav button[aria-current="true"] .n{color:var(--accent)}
+.navgroup{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--faint);padding:12px 10px 4px;font-weight:700}
+
+.main{min-width:0;padding:0 0 64px}
+.bar{position:sticky;top:0;z-index:20;background:var(--panel);border-bottom:1px solid var(--line);padding:10px 20px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.bar input[type=search]{flex:1;min-width:180px;padding:6px 10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);font:inherit;font-size:13px}
+.bar select,.bar button{padding:6px 10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);font:inherit;font-size:12.5px;cursor:pointer}
+.bar button:hover{border-color:var(--accent);color:var(--accent)}
+.meter{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.track{width:120px;height:6px;border-radius:99px;background:var(--line);overflow:hidden;display:flex}
+.track i{display:block;height:100%}
+.track .p{background:var(--pass)} .track .f{background:var(--fail)} .track .b{background:var(--block)} .track .x{background:var(--na)}
+
+.wrap{padding:20px}
+.tabhead{margin:0 0 4px;font-size:19px;letter-spacing:-.015em}
+.tabsub{margin:0 0 18px;color:var(--muted);font-size:13px;max-width:72ch}
+
+/* ---------- case card ---------- */
+.case{background:var(--panel);border:1px solid var(--line);border-radius:9px;margin-bottom:10px;overflow:hidden}
+.case.is-pass{border-left:3px solid var(--pass)}
+.case.is-fail{border-left:3px solid var(--fail)}
+.case.is-block{border-left:3px solid var(--block)}
+.case.is-na{border-left:3px solid var(--na);opacity:.72}
+.chead{display:flex;gap:10px;align-items:flex-start;padding:11px 14px;cursor:pointer}
+.chead:hover{background:var(--line-soft)}
+.cid{font-family:var(--mono);font-size:11px;color:var(--faint);white-space:nowrap;padding-top:2px}
+.ctitle{flex:1;min-width:0;font-weight:600;font-size:13.5px}
+.pri{font-size:10px;text-transform:uppercase;letter-spacing:.06em;font-weight:700;padding-top:3px;white-space:nowrap}
+.pri.critical{color:var(--crit)} .pri.high{color:var(--high)} .pri.medium{color:var(--med)}
+.state{font-size:10.5px;font-weight:700;border-radius:99px;padding:2px 8px;white-space:nowrap;text-transform:uppercase;letter-spacing:.04em}
+.state.pass{background:var(--pass-bg);color:var(--pass)}
+.state.fail{background:var(--fail-bg);color:var(--fail)}
+.state.block{background:var(--block-bg);color:var(--block)}
+.state.na{background:var(--na-bg);color:var(--na)}
+.state.todo{background:var(--na-bg);color:var(--faint)}
+.cbody{padding:0 14px 14px;border-top:1px solid var(--line-soft)}
+.cbody[hidden]{display:none!important}
+.sec{margin-top:13px}
+.sec h4{margin:0 0 5px;font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--faint)}
+.sec ol,.sec ul{margin:0;padding-left:19px}
+.sec li{margin:2px 0}
+.sec p{margin:0}
+.why{border-left:2px solid var(--accent);padding:6px 0 6px 10px;color:var(--muted);font-size:12.5px;background:var(--accent-soft);border-radius:0 5px 5px 0;padding-right:10px}
+pre{margin:0;background:var(--code-bg);border:1px solid var(--line-soft);border-radius:6px;padding:9px 11px;overflow-x:auto;font-family:var(--mono);font-size:12px;line-height:1.5}
+.codewrap{position:relative}
+.copy{position:absolute;top:6px;right:6px;font-size:10.5px;padding:3px 7px;border:1px solid var(--line);border-radius:5px;background:var(--panel);color:var(--muted);cursor:pointer}
+.copy:hover{color:var(--accent);border-color:var(--accent)}
+.expect{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px}
+.expect>div{background:var(--bg);border:1px solid var(--line-soft);border-radius:7px;padding:9px 11px}
+.marks{display:flex;gap:6px;flex-wrap:wrap;margin-top:13px;align-items:center}
+.marks button{padding:5px 12px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--muted);font:inherit;font-size:12px;cursor:pointer;font-weight:600}
+.marks button:hover{border-color:currentColor}
+.marks button.on.pass{background:var(--pass-bg);color:var(--pass);border-color:var(--pass)}
+.marks button.on.fail{background:var(--fail-bg);color:var(--fail);border-color:var(--fail)}
+.marks button.on.block{background:var(--block-bg);color:var(--block);border-color:var(--block)}
+.marks button.on.na{background:var(--na-bg);color:var(--na);border-color:var(--na)}
+.marks textarea{flex:1;min-width:180px;padding:5px 9px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);font:inherit;font-size:12.5px;resize:vertical;min-height:32px}
+table.grid{width:100%;border-collapse:collapse;font-size:12.5px}
+table.grid th,table.grid td{border:1px solid var(--line-soft);padding:6px 9px;text-align:left;vertical-align:top}
+table.grid th{background:var(--bg);font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--faint)}
+.tablewrap{overflow-x:auto}
+.empty{color:var(--faint);padding:28px 0;text-align:center}
+
+@media (max-width:860px){
+  .app{grid-template-columns:1fr}
+  .side{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line)}
+  .nav{display:flex;flex-wrap:wrap;gap:3px}
+  .nav li{flex:0 0 auto}
+  .navgroup{display:none}
+  .wrap{padding:16px}
+}
+@media print{
+  .side,.bar,.marks button,.copy{display:none!important}
+  .app{display:block}
+  .case{break-inside:avoid;border:1px solid #ccc}
+  .cbody{display:block!important}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="brand">
+      <h1>Kitab Shop — QA Test Plan</h1>
+      <p id="brandsub">order &amp; checkout, end to end</p>
+    </div>
+    <nav><ul class="nav" id="nav"></ul></nav>
+  </aside>
+  <main class="main">
+    <div class="bar">
+      <input type="search" id="q" placeholder="Search all cases…" aria-label="Search cases">
+      <select id="fstate" aria-label="Filter by result">
+        <option value="">All results</option>
+        <option value="todo">Not run</option>
+        <option value="pass">Passed</option>
+        <option value="fail">Failed</option>
+        <option value="block">Blocked</option>
+        <option value="na">N/A</option>
+      </select>
+      <select id="fpri" aria-label="Filter by priority">
+        <option value="">All priorities</option>
+        <option value="critical">Critical</option>
+        <option value="high">High</option>
+        <option value="medium">Medium</option>
+      </select>
+      <div class="meter" id="meter"></div>
+      <button id="expand">Expand all</button>
+      <button id="exportmd">Export .md</button>
+      <button id="exportjson">Export .json</button>
+      <button id="theme">Theme</button>
+      <button id="reset">Reset</button>
+    </div>
+    <div class="wrap" id="wrap"></div>
+  </main>
+</div>
+<script>
+/* Every case below was derived from the code, not assumed. Where a case looks
+   surprising, the `why` line says which invariant it protects. */
+const TABS = [
+ {id:"setup", group:"Start here", name:"Setup", blurb:"Get both apps running and prove you can read the database. Nothing else in this plan works until this tab is green. Examples throughout use the seeded book \u201cThe Quiet Between Waves\u201d (Paperback \u20b9399, Hardcover \u20b9599, E-book inactive) \u2014 those figures were verified against the running app on 16 Sep 2026."},
+ {id:"auth", group:"Customer", name:"Auth & accounts", blurb:"Signup through to account deletion, including the branches most people skip: unverified login, resend, 2FA."},
+ {id:"catalog", group:"Customer", name:"Catalogue & product", blurb:"Browsing, search, facets and the product page. Variants get their own cases — they are where pricing bugs hide."},
+ {id:"cart", group:"Customer", name:"Cart & wishlist", blurb:"Cart maths, variant lines, stock blocks, Buy Now scoping, wishlist and compare."},
+ {id:"coupon", group:"Customer", name:"Coupons & wallet", blurb:"Per-customer allowance, the total redemption budget, and the rule that the coupon list and checkout must never disagree."},
+ {id:"cod", group:"Checkout", name:"Checkout — COD", blurb:"Cash on delivery: the OTP gate, the amount gates, and pincode serviceability failing closed."},
+ {id:"razorpay", group:"Checkout", name:"Checkout — Razorpay", blurb:"Order-first prepaid flow: intent, verification, webhook, retry and the abandoned-checkout sweeper."},
+ {id:"pricing", group:"Checkout", name:"Pricing & money", blurb:"The server decides every amount. These cases try to make it decide wrongly."},
+ {id:"lifecycle", group:"Fulfilment", name:"Order lifecycle", blurb:"The status transition table, enforced identically in the admin dropdown and the courier webhook."},
+ {id:"shipping", group:"Fulfilment", name:"Shipping & tracking", blurb:"Manual dispatch, Shiprocket lifecycle, and what the customer sees while a parcel is in transit."},
+ {id:"cancel", group:"Money", name:"Cancellation & refunds", blurb:"Self-cancel, admin cancel, partial cancel, gateway refunds and manual payouts. The highest-stakes tab."},
+ {id:"returns", group:"Money", name:"Returns & replacements", blurb:"The full reverse journey, including the disposition decision that separates a refund from a restock."},
+ {id:"rto", group:"Money", name:"RTO", blurb:"Parcels that come back. Prepaid owes a refund; COD owes nothing."},
+ {id:"inventory", group:"Fulfilment", name:"Inventory & stock", blurb:"Decrement, restock, variant-level stock and the reservation that holds units during payment."},
+ {id:"admin", group:"Admin", name:"Panel & permissions", blurb:"Six roles, twenty permissions. Most of these cases are things that must NOT work."},
+ {id:"reports", group:"Admin", name:"Reports & exports", blurb:"Sales, COD reconciliation, coupon usage, audit log and system health."},
+ {id:"email", group:"Admin", name:"Emails & notifications", blurb:"What should land in an inbox, and what is deliberately suppressed."},
+ {id:"security", group:"Hardening", name:"Security & negative", blurb:"IDOR, rate limits, signature forgery, price tampering. Assume the tester is the attacker."},
+ {id:"auto", group:"Hardening", name:"Automated suites", blurb:"The 37 regression suites, the unit tests and the Playwright smoke scripts — how to run them and what they mean."},
+ {id:"fixes", group:"Start here", name:"Recent fixes", blurb:"Targeted re-verification of the seven fixes shipped on 16 Sep 2026. Run this tab first after any deploy."},
+];
+
+const T = [];
+const add = (tab, id, title, pri, o) => T.push(Object.assign({tab,id,title,pri}, o));
+
+/* ============================== 1. SETUP ============================== */
+add("setup","SET-01","Both servers start and talk to each other","critical",{
+ pre:"Node ≥ 24, a local mongod running as replica set rs0.",
+ steps:[
+  "Backend: <code>cd kitab-shop-be &amp;&amp; npm install &amp;&amp; npm run dev</code>",
+  "Confirm the console prints the port (default 3000) and a Mongo connection line.",
+  "Frontend: <code>cd kitab-shop-fe &amp;&amp; npm install &amp;&amp; npm run dev</code> (Vite, default 5173).",
+  "Open <code>http://localhost:5173</code>. The homepage renders with book covers."
+ ],
+ ui:"Homepage loads with images. No red errors in the browser console.",
+ db:null,
+ why:"Covers load from the BACKEND at /uploads. If every cover is broken but text renders, VITE_BACKEND_URL is wrong — not the catalogue."
+});
+add("setup","SET-02","Identify which database you are actually testing","critical",{
+ pre:"Backend running.",
+ steps:[
+  "Run the command opposite from <code>kitab-shop-be/</code>.",
+  "Write the printed database name at the top of your notes. Every query in this plan runs against it."
+ ],
+ ui:"—",
+ admin:"—",
+ cmd:`cd kitab-shop-be
+node --input-type=module -e '
+import "dotenv/config"; import mongoose from "mongoose";
+await mongoose.connect(process.env.mango_url||process.env.mongo_url||process.env.MONGO_URI);
+console.log("DB :", mongoose.connection.name);
+console.log("HOST:", mongoose.connection.host+":"+mongoose.connection.port);
+await mongoose.disconnect();'`,
+ expect:"Host must be 127.0.0.1 or localhost. If it is a public IP, STOP — you are pointed at production.",
+ why:"The local database and the production database can share a name. The host is the only reliable difference. Never run this plan against a remote host."
+});
+add("setup","SET-03","Open a mongosh session you can keep","high",{
+ pre:"SET-02 done; you know the database name.",
+ steps:["Replace <code>&lt;DB&gt;</code> with the name from SET-02.","Run the count — it should answer without error."],
+ cmd:`mongosh "mongodb://127.0.0.1:27017/<DB>" --quiet --eval 'db.orders.countDocuments({})'`,
+ ui:"A number prints.",
+ db:"Any number is fine. You are only proving the connection works."
+});
+add("setup","SET-04","An admin account exists and can reach /admin","critical",{
+ pre:"Backend running.",
+ steps:[
+  "Create or reset an admin: <code>npm run admin:upsert -- --email=admin@kitab.local --password=AdminTest12345 --roles=superAdmin</code>",
+  "Log in at <code>/login</code> (or <code>/seller-login</code>) with those credentials.",
+  "You should land on <code>/admin</code>."
+ ],
+ ui:"Redirected to the admin dashboard. Sidebar shows every section.",
+ db:`db.users.findOne({email:"admin@kitab.local"},{email:1,roles:1,isVerified:1,isBlocked:1})`,
+ expect:"roles contains superAdmin · isVerified true · isBlocked false",
+ why:"The upsert script sets isVerified true deliberately, so a seeded admin skips email verification. A hand-made admin will be stuck at the verify screen."
+});
+add("setup","SET-05","A customer account exists","high",{
+ pre:"—",
+ steps:["Either sign up normally (AUTH-01) or use a seeded customer.","Note the email and password; you will use this account throughout."],
+ ui:"Can log in and reach <code>/account</code>.",
+ db:`db.users.findOne({email:"<your customer>"},{email:1,roles:1,isVerified:1})`,
+ expect:"roles is ['user'] · isVerified true"
+});
+add("setup","SET-06","Record the current checkout settings before you change anything","high",{
+ pre:"Admin logged in.",
+ steps:["Run the query opposite and paste the result into your notes.","At the end of testing, restore these values."],
+ cmd:`mongosh "mongodb://127.0.0.1:27017/<DB>" --quiet --eval 'printjson(db.checkoutsettings.findOne({}))'`,
+ ui:"—",
+ admin:"Same values visible at <code>/admin/operations?tab=checkout</code>.",
+ why:"Several tabs ask you to flip codEnabled, shippingRatesEnabled and the amount limits. Without a record of the starting state you cannot put the store back."
+});
+add("setup","SET-07","Know how to reset between runs","medium",{
+ pre:"—",
+ steps:[
+  "Orders cannot be deleted from the UI by design.",
+  "To clear test orders for one customer, use the query opposite.",
+  "Products and coupons are safer to clean by name/code prefix."
+ ],
+ cmd:`// DANGEROUS — check the DB name first (SET-02)
+db.orders.deleteMany({ user: ObjectId("<customer id>") })`,
+ ui:"—",
+ why:"Cancelling an order does not remove it — it is a terminal status with compensation logic attached. Deleting rows is the only true reset, and only ever on a local database."
+});
+
+/* ============================== 2. AUTH ============================== */
+add("auth","AUTH-01","Signup creates an unverified account","critical",{
+ pre:"Logged out.",
+ steps:["Go to <code>/signup</code>.","Register with a fresh email.","You are redirected to <code>/verify-email</code>."],
+ ui:"Verify-email screen, with the email shown.",
+ db:`db.users.findOne({email:"<new email>"},{email:1,isVerified:1,roles:1})`,
+ expect:"isVerified false · roles ['user']"
+});
+add("auth","AUTH-02","An unverified account cannot log in","critical",{
+ pre:"AUTH-01 done, email not yet verified.",
+ steps:["Go to <code>/login</code> and use the new credentials."],
+ ui:"Login refused with an 'email not verified' message and a route to resend.",
+ api:"401 with code EMAIL_NOT_VERIFIED",
+ why:"If this passes, every downstream gate that assumes a verified email is unguarded."
+});
+add("auth","AUTH-03","Verification by emailed link","high",{
+ pre:"AUTH-01 done; SMTP configured or the token read from the database.",
+ steps:["Open the verification link from the email.","Land on <code>/verify-email?token=…</code>; it verifies on load.","After ~3s you are sent to <code>/login</code>."],
+ ui:"Success message, then redirect.",
+ db:`db.users.findOne({email:"<new email>"},{isVerified:1})`,
+ expect:"isVerified true"
+});
+add("auth","AUTH-04","Verification by OTP code","medium",{
+ pre:"AUTH-01 done.",
+ steps:["On <code>/verify-email</code> enter the emailed OTP instead of using the link.","Submit."],
+ ui:"Same success path as the link.",
+ db:`db.users.findOne({email:"<new email>"},{isVerified:1})`,
+ expect:"isVerified true"
+});
+add("auth","AUTH-05","Resend verification is rate-limited by a cooldown","medium",{
+ pre:"On the verify-email screen.",
+ steps:["Press Resend.","Press it again immediately."],
+ ui:"The button disables and shows a countdown; the second press is refused client-side.",
+ why:"The server limit is 30 requests per 15 minutes; the cooldown exists so a customer does not burn through it by clicking."
+});
+add("auth","AUTH-06","Login succeeds after verification and lands by role","critical",{
+ pre:"A verified customer and a verified admin.",
+ steps:["Log in as the customer → expect the storefront.","Log out. Log in as the admin → expect <code>/admin</code>."],
+ ui:"Customer lands on the site; admin lands on the dashboard.",
+ why:"Role-based landing is decided on the client after login; a customer must never be handed an admin shell even briefly."
+});
+add("auth","AUTH-07","Forgot password → reset works end to end","high",{
+ pre:"A verified account.",
+ steps:["<code>/forgot-password</code>, submit the email.","Open the emailed reset link.","Set a new password and log in with it."],
+ ui:"Reset confirmed; the old password no longer works.",
+ db:"—",
+ why:"The reset link uses RESET_PASSWORD_FRONTEND_URL — if that points somewhere unreachable the email is useless even though the flow 'works'."
+});
+add("auth","AUTH-08","Seller login rejects a non-admin","high",{
+ pre:"A customer account.",
+ steps:["Go to <code>/seller-login</code>.","Log in with customer credentials."],
+ ui:"Force-logged-out with \"This account doesn't have admin access\".",
+ why:"It is the same credential store as /login — the guard is the only thing separating the two doors."
+});
+add("auth","AUTH-09","A blocked admin's existing token stops working","critical",{
+ pre:"Two admins; you are logged in as admin B in another browser.",
+ steps:["As admin A, block admin B at <code>/admin/users</code>.","In admin B's still-open session, click any admin page."],
+ ui:"Admin B is rejected — the live session does not survive the block.",
+ db:`db.users.findOne({email:"<admin B>"},{isBlocked:1,isActive:1})`,
+ expect:"isBlocked true",
+ why:"The admin middleware re-reads the user on every request. If a blocked admin keeps working until their token expires, that check has regressed."
+});
+add("auth","AUTH-10","Delete my account","medium",{
+ pre:"A throwaway customer account, logged in.",
+ steps:["<code>/account/profile</code> → Delete Account.","Confirm the prompt."],
+ ui:"Logged out; the account can no longer log in.",
+ db:`db.users.findOne({email:"<throwaway>"},{deletedAt:1,isActive:1})`,
+ expect:"deletedAt set (soft delete) — the row is not removed"
+});
+
+/* ============================== 3. CATALOGUE ============================== */
+add("catalog","CAT-01","Product listing renders, sorts and paginates","high",{
+ pre:"Catalogue seeded.",
+ steps:["<code>/products</code>.","Change sort to Price: low → high; confirm the first item is the cheapest.","Page forward and back."],
+ ui:"Grid re-orders correctly; pagination resets to page 1 when a filter changes.",
+ why:"Filtering and sorting are CLIENT-side over the full catalogue preloaded at app start. A slow first paint is expected; wrong ordering is not."
+});
+add("catalog","CAT-02","Category facets narrow the list","medium",{
+ pre:"—",
+ steps:["Open a category page <code>/category/:id</code>.","Apply a price range, a minimum rating, an author and a language.","Clear them one at a time."],
+ ui:"Counts shrink and grow consistently; clearing restores the full list."
+});
+add("catalog","CAT-03","Format facet lists only ACTIVE variants","high",{
+ pre:"A product with an inactive variant (the seed marks E-book inactive).",
+ steps:["Open the category page and inspect the Format facet."],
+ ui:"E-book does NOT appear as a filterable format.",
+ why:"An inactive variant is unsellable. Offering it as a filter leads a customer to a product they cannot buy."
+});
+add("catalog","CAT-04","Search returns results and logs the click","medium",{
+ pre:"—",
+ steps:["Type a book title into the header search.","Pick a suggestion.","Land on the product page."],
+ ui:"Suggestions appear above a minimum query length; selecting one navigates to the product.",
+ db:`db.searchanalytics.find({}).sort({_id:-1}).limit(3)`,
+ expect:"A row recording the search term"
+});
+add("catalog","CAT-05","Product page shows the selected variant's price and MRP","critical",{
+ pre:"Use <strong>The Quiet Between Waves</strong> from the seeded catalogue — Paperback ₹399 (MRP ₹599), Hardcover ₹599 (MRP ₹899), E-book inactive.",
+ steps:["Open the product.","Switch between Paperback and Hardcover.","Watch the price, the struck-through MRP and the discount badge."],
+ ui:"Price and MRP both change with the selection, and the discount percentage stays sensible (never negative).",
+ db:`db.products.findOne({name:"<book>"},{price:1,mrp:1,"variants.name":1,"variants.price":1,"variants.mrp":1})`,
+ expect:"Paperback shows ₹399 / ₹599. Hardcover shows ₹599 / ₹899. Verified live on 16 Sep 2026.",
+ why:"Until 16 Sep 2026 this price was DISPLAYED but not CHARGED. Pair this case with PRICE-02, which proves the charged amount now matches."
+});
+add("catalog","CAT-06","A variant must be chosen before adding to cart","high",{
+ pre:"A product with more than one active variant.",
+ steps:["Open it and press Add to Cart without choosing a format."],
+ ui:"Blocked with a prompt to pick an option; nothing is added.",
+ why:"A variant-stocked product cannot answer 'which units were sold', so the server refuses the line too. The UI should stop it first."
+});
+add("catalog","CAT-07","An inactive variant cannot be bought","critical",{
+ pre:"A product with an inactive variant.",
+ steps:["Try to select the inactive format.","If it is selectable, try Add to Cart and then checkout."],
+ ui:"Not selectable. The seeded E-book variant is both inactive AND stock 0, so a forced attempt is refused on stock first — either refusal is correct.",
+ why:"The server refuses an inactive variant at checkout regardless of stock. Anything the UI lets through becomes a failed order at the last step."
+});
+add("catalog","CAT-08","Single active variant auto-selects","medium",{
+ pre:"A product with exactly one active variant.",
+ steps:["Open it."],
+ ui:"The only option is pre-selected; Add to Cart works without a manual choice.",
+ why:"With one possibility there is no ambiguity, so both the UI and the order path adopt it silently."
+});
+add("catalog","CAT-09","Delivery estimate by pincode","medium",{
+ pre:"—",
+ steps:["On a product page enter a 6-digit pincode in the delivery box."],
+ ui:"An estimate or a clear 'not serviceable' message. Never a silent blank."
+});
+add("catalog","CAT-10","Review submission is gated on eligibility","medium",{
+ pre:"A customer who has NOT bought the product.",
+ steps:["Open the product and try to leave a review.","Repeat as a customer who HAS a delivered order for it."],
+ ui:"Ineligible customer is refused; eligible one can submit, with images.",
+ db:`db.reviews.find({product:ObjectId("<id>")}).limit(3)`
+});
+
+/* ============================== 4. CART ============================== */
+add("cart","CART-01","Add, change quantity, remove","critical",{
+ pre:"Logged in.",
+ steps:["Add a book.","Increase quantity to 3 in the cart.","Remove it and confirm the dialog."],
+ ui:"Line total tracks quantity; removal asks for confirmation.",
+ db:`db.carts.findOne({user:ObjectId("<customer id>")},{items:1})`,
+ expect:"items[] matches the screen; the removed line is gone"
+});
+add("cart","CART-02","Two variants of one product are two separate lines","high",{
+ pre:"<strong>The Quiet Between Waves</strong> — Paperback ₹399 (25 in stock) and Hardcover ₹599 (13 in stock), both active.",
+ steps:["Add Paperback.","Add Hardcover.","Look at the cart."],
+ ui:"Two distinct lines, each with its own format label and price.",
+ db:`db.carts.findOne({user:ObjectId("<id>")},{"items.variantKey":1,"items.price":1,"items.quantity":1})`,
+ expect:"Two entries with different variantKey values",
+ why:"Lines are keyed by a normalised variantKey. If they merge, the wrong format ships."
+});
+add("cart","CART-03","The cart charges the variant's price","critical",{
+ pre:"CART-02 done — Paperback ₹399 and Hardcover ₹599 are already two lines.",
+ steps:["Compare each cart line price against the product page price for that format."],
+ ui:"They match exactly.",
+ db:`db.carts.findOne({user:ObjectId("<id>")},{"items.price":1,"items.mrp":1,"items.variantKey":1})`,
+ expect:"The Hardcover line reads 599, not the 399 base price",
+ why:"The cart reconciles its stored snapshot against the live product on every read. Before the fix that reconciliation pulled every line down to the base price."
+});
+add("cart","CART-04","Quantity above stock is blocked","critical",{
+ pre:"A product (or variant) with a small known stock, e.g. 2.",
+ steps:["Try to add 5.","Then add 2 and try to raise it to 5 in the cart."],
+ ui:"Refused with 'only N item(s) in stock'. Checkout button is blocked while the cart is over stock.",
+ db:`db.products.findOne({name:"<book>"},{stock:1,"variants.name":1,"variants.stock":1})`,
+ expect:"Availability is the VARIANT's stock when a variant is selected, not the product total",
+ why:"product.stock is the SUM across variants. Checking it alone sells a sold-out format of an in-stock book."
+});
+add("cart","CART-05","A variant deactivated while in the cart blocks checkout","high",{
+ pre:"An item in the cart.",
+ steps:["In admin, set that variant inactive.","Return to the cart and reload."],
+ ui:"The line shows 'No longer available — remove to continue'; the checkout button is disabled until it is removed."
+});
+add("cart","CART-06","A price change is reconciled and flagged","medium",{
+ pre:"An item in the cart.",
+ steps:["In admin, change that product's price.","Reload the cart."],
+ ui:"The line shows the new price, and the change is signalled rather than applied silently.",
+ db:`db.carts.findOne({user:ObjectId("<id>")},{"items.price":1})`,
+ expect:"The stored snapshot has been rewritten to the live price"
+});
+add("cart","CART-07","Buy Now does not touch the cart","high",{
+ pre:"A cart with 2 items.",
+ steps:["Open a third, different product and press Buy Now.","Complete or abandon checkout.","Return to the cart."],
+ ui:"Checkout prices only the Buy Now line. The original 2 cart items are untouched.",
+ why:"Buy Now carries its scope in router state only. If it merges into the cart, a customer buying one book pays for three."
+});
+add("cart","CART-08","Buy Now gets its own coupon, not the cart's","medium",{
+ pre:"A coupon applied to the cart.",
+ steps:["Start a Buy Now checkout for a different product."],
+ ui:"The cart's coupon is NOT inherited; the Buy Now line starts with no coupon."
+});
+add("cart","CART-09","Cart survives logout and login","high",{
+ pre:"Items in the cart.",
+ steps:["Log out. Log back in."],
+ ui:"The cart is still there.",
+ db:`db.carts.findOne({user:ObjectId("<id>")},{items:1})`,
+ expect:"Server-side cart persists — it is not browser storage"
+});
+add("cart","CART-10","Wishlist add, view and move to cart","medium",{
+ pre:"Logged in.",
+ steps:["Heart a product.","Open <code>/wishlist</code>.","Move it to the cart."],
+ ui:"Appears in the wishlist, then moves across.",
+ db:`db.wishlists.findOne({user:ObjectId("<id>")})`
+});
+add("cart","CART-11","Compare caps at three products","medium",{
+ pre:"—",
+ steps:["Add four products to compare."],
+ ui:"The fourth is refused or displaces one; never four at once.",
+ why:"Compare is client-only state with a hard cap of 3."
+});
+
+/* ============================== 5. COUPONS & WALLET ============================== */
+add("coupon","CPN-01","A valid coupon applies and reduces the total","critical",{
+ pre:"An active coupon (create one at <code>/admin/coupons</code>), items in the cart.",
+ steps:["Enter the code in the cart or at checkout.","Apply."],
+ ui:"Discount line appears; the total drops by the discount.",
+ db:`db.couponmodels.findOne({couponId:"<CODE>"},{discountType:1,discountValue:1,maxLimit:1,globalMaxRedemptions:1,usage:1})`,
+ expect:"Percentage coupons compute against the ELIGIBLE subtotal, not the order total"
+});
+add("coupon","CPN-02","An expired or inactive coupon is refused","high",{
+ pre:"A coupon with expireDate in the past, and another with isActive false.",
+ steps:["Try each at checkout."],
+ ui:"Refused with a reason ('expired' / 'not active'). No discount applied."
+});
+add("coupon","CPN-03","Per-customer allowance (maxLimit) is enforced","critical",{
+ pre:"A coupon with <code>maxLimit: 2</code>.",
+ steps:["Place an order using it.","Place a second order using it.","Try a third."],
+ ui:"First two succeed; the third is refused with 'the maximum 2 times'.",
+ db:`db.couponredemptions.findOne({coupon:"<CODE>", user:ObjectId("<id>")})`,
+ expect:"count reaches 2, then stops",
+ why:"maxLimit is PER CUSTOMER, not a global cap. A different customer must still get their full allowance — check CPN-04."
+});
+add("coupon","CPN-04","The allowance is per customer, not global","high",{
+ pre:"CPN-03 done (customer A exhausted).",
+ steps:["Log in as customer B.","Apply the same coupon."],
+ ui:"Accepted — B has their own allowance.",
+ db:`db.couponredemptions.find({coupon:"<CODE>"})`,
+ expect:"One row per customer, each with its own count"
+});
+add("coupon","CPN-05","A 2-use coupon still appears in the customer's list after one use","high",{
+ pre:"A coupon with <code>maxLimit: 2</code>, used once by this customer.",
+ steps:["At checkout open 'view available coupons'."],
+ ui:"The coupon is still listed.",
+ why:"The list used to hardcode the allowance at 1, so a multi-use coupon vanished after the first use while checkout still accepted it. The list and checkout must agree."
+});
+add("coupon","CPN-06","Abandoning a Razorpay checkout does NOT spend the coupon","critical",{
+ pre:"An unused coupon, Razorpay available.",
+ steps:["Apply the coupon and start a Razorpay checkout.","Close the payment window without paying.","Return to checkout and open the coupon list."],
+ ui:"The coupon is still offered, and still applies.",
+ db:`db.orders.find({user:ObjectId("<id>"), paymentStatus:"Pending", paymentMethod:"RAZORPAY"},{coupon:1})
+db.couponredemptions.findOne({coupon:"<CODE>", user:ObjectId("<id>")})`,
+ expect:"An unpaid Pending order row exists carrying the coupon, but NO redemption row",
+ why:"A prepaid order is created before payment. Counting that row as a use would silently burn a customer's coupon for a purchase they never made."
+});
+add("coupon","CPN-07","Total redemption budget stops the store overall","critical",{
+ pre:"A coupon with <code>globalMaxRedemptions: 2</code> (Total Redemption Budget in the coupon form).",
+ steps:["Redeem it as customer A.","Redeem it as customer B.","Try as customer C."],
+ ui:"C is refused with 'This coupon has reached its redemption limit'.",
+ db:`db.couponmodels.findOne({couponId:"<CODE>"},{usage:1,globalMaxRedemptions:1})`,
+ expect:"usage 2, globalMaxRedemptions 2 — and usage never exceeds the budget",
+ why:"This is the only total cap on discount spend. Without it a leaked code runs until someone notices."
+});
+add("coupon","CPN-08","An exhausted coupon disappears from the customer's list","high",{
+ pre:"CPN-07 done.",
+ steps:["As customer C, open 'view available coupons' at checkout."],
+ ui:"The exhausted coupon is not listed, and entering it manually is still refused.",
+ why:"Hidden AND refused. If it is only hidden, a customer with the code in an email still gets through."
+});
+add("coupon","CPN-09","A budget of 0 means unlimited","high",{
+ pre:"A coupon with Total Redemption Budget left at 0.",
+ steps:["Redeem it from three different accounts."],
+ ui:"All three succeed.",
+ db:`db.couponmodels.findOne({couponId:"<CODE>"},{usage:1,globalMaxRedemptions:1})`,
+ expect:"globalMaxRedemptions 0 · usage climbs freely",
+ why:"0 is the 'no limit' sentinel and the default, so every pre-existing coupon must behave exactly as it did before the feature existed."
+});
+add("coupon","CPN-10","Cancelling an order gives the coupon use back","critical",{
+ pre:"A coupon with a budget of 1, redeemed on an order.",
+ steps:["Cancel that order.","Try the coupon from another account."],
+ ui:"The slot is free again and the second customer can use it.",
+ db:`db.couponmodels.findOne({couponId:"<CODE>"},{usage:1})
+db.couponredemptions.findOne({coupon:"<CODE>", user:ObjectId("<first customer>")})`,
+ expect:"usage back to 0 · the customer's count back to 0 (the row stays, it is not deleted)",
+ why:"The row is kept so redemption history survives a cancellation; only the count moves."
+});
+add("coupon","CPN-11","A percentage coupon discounts the VARIANT's price","high",{
+ pre:"A 10% coupon; <strong>The Quiet Between Waves</strong> Hardcover at ₹599 (base ₹399).",
+ steps:["Add the Hardcover variant.","Apply the coupon."],
+ ui:"Discount is ₹60 (10% of ₹599), not ₹40 (10% of ₹399).",
+ why:"A percentage OF a subtotal has to use the subtotal the customer is actually charged."
+});
+add("coupon","CPN-12","Wallet credit stacks on top of a coupon","high",{
+ pre:"A customer with wallet balance (earn one via referral, or set it in the database).",
+ steps:["Apply a coupon.","Tick 'use wallet'.","Read the summary."],
+ ui:"Both reductions appear; wallet covers at most (subtotal − coupon discount).",
+ db:`db.userprofiles.findOne({userid:ObjectId("<id>")},{walletBalance:1})`,
+ expect:"Balance is debited only when the order is actually created"
+});
+add("coupon","CPN-13","Wallet cannot be spent twice concurrently","high",{
+ pre:"A wallet balance just large enough for ONE order.",
+ steps:["Open checkout in two tabs with wallet ticked in both.","Place both orders as close together as you can."],
+ ui:"One succeeds; the other is refused with 'Wallet balance is no longer sufficient'.",
+ db:`db.userprofiles.findOne({userid:ObjectId("<id>")},{walletBalance:1})`,
+ expect:"Balance never goes negative",
+ why:"The balance is re-checked inside the order transaction, not at preview time."
+});
+
+/* ============================== 6. CHECKOUT — COD ============================== */
+add("cod","COD-01","COD is hidden when the store has it off","critical",{
+ pre:"<code>/admin/operations?tab=checkout</code> → Cash on Delivery UNCHECKED.",
+ steps:["As a customer, reach the payment step."],
+ ui:"The COD option is absent entirely — not shown-and-disabled.",
+ db:`db.checkoutsettings.findOne({},{codEnabled:1})`,
+ expect:"codEnabled false"
+});
+add("cod","COD-02","COD requires an emailed OTP","critical",{
+ pre:"COD enabled.",
+ steps:["Choose COD.","Try Place Order without requesting an OTP."],
+ ui:"Blocked — the place-order button stays disabled until the OTP is verified.",
+ api:"403 COD_OTP_REQUIRED if called directly",
+ why:"The OTP is the only identity check standing between a stranger and goods shipped on credit."
+});
+add("cod","COD-03","The OTP is consumed by exactly one order","critical",{
+ pre:"COD enabled.",
+ steps:["Request and verify an OTP.","Place the order.","Immediately start a second COD order."],
+ ui:"The second order demands a fresh OTP.",
+ db:`db.codverifications.find({userId:ObjectId("<id>")})`,
+ expect:"Empty after the order — the record is deleted in the same transaction",
+ why:"If a verification survived, one OTP would authorise unlimited COD orders."
+});
+add("cod","COD-04","Below the minimum order amount, COD is refused","high",{
+ pre:"Set Minimum (₹) to a value above your cart total, and Save Limits.",
+ steps:["Reach the payment step with a cart under that amount."],
+ ui:"COD shown disabled with the reason, or refused on submit.",
+ api:"403 COD_BELOW_MIN",
+ db:`db.checkoutsettings.findOne({},{codMinOrderAmount:1,codMaxOrderAmount:1})`
+});
+add("cod","COD-05","Above the maximum order amount, COD is refused","high",{
+ pre:"Set Maximum (₹) below your cart total.",
+ steps:["Reach the payment step."],
+ ui:"COD unavailable with the reason.",
+ api:"403 COD_ABOVE_MAX",
+ why:"The cap exists because COD carries no payment guarantee — a high-value COD order is pure exposure."
+});
+add("cod","COD-06","Serviceability check fails CLOSED","critical",{
+ pre:"COD coverage set to 'Follow Shiprocket serviceability' (needs credentials saved).",
+ steps:["Break the connection deliberately — wrong password, or disconnect the network.","Try to place a COD order."],
+ ui:"COD is refused, NOT silently allowed.",
+ why:"An outage must not quietly disable the restriction. If a courier API blip re-opens COD to every pincode, the business rule is decorative. Contrast with SHIP-06, where rates fail OPEN on purpose."
+});
+add("cod","COD-07","A COD order is created Confirmed but NOT paid","critical",{
+ pre:"COD enabled, OTP verified.",
+ steps:["Place a COD order.","Note the order id from the success screen."],
+ ui:"Order success page with a reference.",
+ admin:"<code>/admin/orders/:id</code> shows status Confirmed, payment Pending.",
+ db:`db.orders.findOne({_id:ObjectId("<order id>")},{orderStatus:1,paymentStatus:1,paymentMethod:1,totalAmount:1,idempotencyKey:1})`,
+ expect:"orderStatus 'Confirmed' · paymentStatus 'Pending' · paymentMethod 'COD' · idempotencyKey present",
+ why:"COD must never be born Paid. The money arrives at the door — see LIFE-06."
+});
+add("cod","COD-08","Double-submitting a COD order creates ONE order","critical",{
+ pre:"COD ready.",
+ steps:["Place the order and, if you can, double-click the button.","Or replay the same request with the same idempotencyKey."],
+ ui:"One order. A repeat returns the same order rather than a second one.",
+ db:`db.orders.countDocuments({user:ObjectId("<id>"), idempotencyKey:"<key>"})`,
+ expect:"Exactly 1",
+ why:"Protected by a unique index on (user, idempotencyKey) as well as a pre-check, so a race cannot slip between them."
+});
+add("cod","COD-09","Stock is decremented when the COD order is created","critical",{
+ pre:"Note a product's stock first.",
+ steps:["Place a COD order for 2 units.","Re-read the stock."],
+ ui:"—",
+ db:`db.products.findOne({_id:ObjectId("<pid>")},{stock:1,"variants.stock":1})`,
+ expect:"Both product total AND the chosen variant drop by 2"
+});
+add("cod","COD-10","The ordered items leave the cart","high",{
+ pre:"A cart with the ordered item plus one other.",
+ steps:["Place a COD order.","Open the cart."],
+ ui:"Only the un-ordered item remains.",
+ db:`db.carts.findOne({user:ObjectId("<id>")},{items:1})
+db.orders.findOne({_id:ObjectId("<oid>")},{cartClearedAt:1})`,
+ expect:"cartClearedAt is stamped — the claim that stops a repeat response subtracting twice"
+});
+
+/* ============================== 7. CHECKOUT — RAZORPAY ============================== */
+add("razorpay","RZP-01","Starting a prepaid checkout creates a Pending order BEFORE payment","critical",{
+ pre:"PAYMENTS_ENABLED true and Razorpay test keys set.",
+ steps:["Reach the payment step and choose online payment.","Press Place Order so the Razorpay window opens.","Do NOT pay yet.","Query the database."],
+ ui:"Razorpay checkout window opens.",
+ db:`db.orders.find({user:ObjectId("<id>")}).sort({_id:-1}).limit(1).toArray()
+db.paymentintents.find({}).sort({_id:-1}).limit(1).toArray()`,
+ expect:"An order exists with orderStatus 'Pending', paymentStatus 'Pending', paymentExpiresAt ~20 min ahead; a matching PaymentIntent",
+ why:"Order-first. The row exists so a captured-but-unmatched payment always has somewhere to reconcile to."
+});
+add("razorpay","RZP-02","An unpaid checkout is hidden from My Orders","critical",{
+ pre:"RZP-01 done, still unpaid.",
+ steps:["Open <code>/account/orders</code>."],
+ ui:"The unpaid checkout is NOT listed.",
+ admin:"<code>/admin/orders</code> also hides it unless you pass ?includeAwaitingPayment=true.",
+ why:"It is not an order — no money, no commitment. Counting it would inflate revenue, order counts and charts."
+});
+add("razorpay","RZP-03","Paying promotes the order to Confirmed/Paid","critical",{
+ pre:"RZP-01 open.",
+ steps:["Complete payment with a Razorpay test card.","Return to the app."],
+ ui:"Order success page.",
+ admin:"Order shows Confirmed / Paid.",
+ db:`db.orders.findOne({_id:ObjectId("<oid>")},{orderStatus:1,paymentStatus:1,razorpayPaymentId:1,razorpayOrderId:1,paymentVerifiedAt:1,paymentExpiresAt:1})`,
+ expect:"Confirmed / Paid · razorpayPaymentId set · paymentVerifiedAt set · paymentExpiresAt cleared to null",
+ why:"paymentExpiresAt must be cleared or the abandonment sweeper could later cancel a paid order."
+});
+add("razorpay","RZP-04","Closing the browser after paying still creates the order","critical",{
+ pre:"RAZORPAY_WEBHOOK_SECRET configured and the webhook reachable.",
+ steps:["Start a prepaid checkout, pay, then close the tab before it returns.","Wait for the webhook.","Check My Orders."],
+ ui:"The order appears anyway.",
+ db:`db.orders.findOne({razorpayPaymentId:"<pay_id>"},{orderStatus:1,paymentStatus:1})
+db.webhookevents.find({}).sort({_id:-1}).limit(3)`,
+ expect:"Confirmed / Paid · a webhookevents row for the event id",
+ why:"The webhook runs the SAME promotion function as the browser. The browser is not load-bearing — that is the whole point of the design."
+});
+add("razorpay","RZP-05","Verify and webhook arriving together make ONE order","critical",{
+ pre:"Webhook enabled.",
+ steps:["Pay normally and let the browser return while the webhook also fires."],
+ ui:"One order on the success page and one in My Orders.",
+ db:`db.orders.countDocuments({razorpayPaymentId:"<pay_id>"})`,
+ expect:"Exactly 1",
+ why:"The promotion is a compare-and-swap on paymentStatus 'Pending'. Only one caller can win."
+});
+add("razorpay","RZP-06","Changing the cart mid-checkout is refused","high",{
+ pre:"A prepaid checkout started but unpaid.",
+ steps:["In another tab, change the cart contents.","Return and try to pay / re-submit."],
+ ui:"Refused and re-priced rather than charging the stale amount.",
+ api:"409 CART_CHANGED",
+ why:"The intent is re-priced on reuse; the customer must never be charged an amount that no longer matches their basket."
+});
+add("razorpay","RZP-07","A failed payment can be retried","high",{
+ pre:"Use a Razorpay test card that fails.",
+ steps:["Let the payment fail.","Use the retry path."],
+ ui:"A new payment attempt opens against the same order.",
+ db:`db.paymentintents.findOne({_id:ObjectId("<intent>")},{previousRazorpayOrderIds:1,razorpayOrderId:1})`,
+ expect:"previousRazorpayOrderIds records the earlier gateway order id",
+ why:"Retries used to orphan the first gateway order. The history is kept so a late capture on the old id still matches."
+});
+add("razorpay","RZP-08","An abandoned checkout is swept and stock returned","critical",{
+ pre:"Note the product stock. RZP-01 done, then abandoned.",
+ steps:["Leave it unpaid for the reservation window (~20 min).","Wait for the cleanup pass.","Re-read stock and the order."],
+ ui:"The order never appears in My Orders.",
+ db:`db.orders.findOne({_id:ObjectId("<oid>")},{orderStatus:1,paymentStatus:1,"statusHistory.source":1})
+db.products.findOne({_id:ObjectId("<pid>")},{stock:1})
+db.stockreservations.find({paymentIntent:ObjectId("<intent>")})`,
+ expect:"Order Cancelled/Failed with statusHistory source 'abandoned_checkout_sweeper' · stock restored · reservation released",
+ why:"Stock comes out of sellable inventory at intent creation. Without the sweeper an abandoned checkout would hold units forever."
+});
+add("razorpay","RZP-09","The amount charged matches the amount ordered","critical",{
+ pre:"—",
+ steps:["Note the total shown at checkout.","Pay.","Compare against the Razorpay dashboard and the order."],
+ ui:"All three agree.",
+ db:`db.orders.findOne({_id:ObjectId("<oid>")},{subtotal:1,discount:1,shippingCharge:1,tax:1,totalAmount:1})`,
+ expect:"totalAmount = subtotal + shippingCharge + tax − discount, and equals the captured amount",
+ why:"The amount AND currency are checked against the intent on verify and again in the webhook."
+});
+
+/* ============================== 8. PRICING & MONEY ============================== */
+add("pricing","PRICE-01","The client cannot set the price","critical",{
+ pre:"Browser devtools or an API client, a valid login token.",
+ steps:["Capture the POST to <code>/api/v1/order/pricing-preview</code>.","Replay it with an added <code>price: 1</code> on the item and a <code>totalAmount: 1</code>.","Compare the response."],
+ ui:"—",
+ api:"The response prices from the catalogue and ignores both injected fields.",
+ db:"—",
+ why:"Every amount is recomputed server-side from the product record. If an injected price ever survives, stop testing and report it immediately."
+});
+add("pricing","PRICE-02","A variant is CHARGED at its own price","critical",{
+ pre:"<strong>The Quiet Between Waves</strong> — base ₹399, Hardcover variant ₹599.",
+ steps:["Add the Hardcover variant to the cart.","Note the checkout total.","Place the order.","Read the order line."],
+ ui:"Checkout shows ₹599, not ₹399.",
+ admin:"The admin order line shows ₹599.",
+ db:`db.orders.findOne({_id:ObjectId("<oid>")},{"items.name":1,"items.price":1,"items.variantKey":1,subtotal:1})`,
+ expect:"items[].price is 599 · subtotal reflects 599 × quantity · variantKey is 'Format:Hardcover'",
+ why:"This is the bug fixed on 16 Sep 2026: the price was displayed but never charged, so a dearer format sold at the base price and a cheaper one overcharged."
+});
+add("pricing","PRICE-03","Preview total equals the created order total","critical",{
+ pre:"A cart with a coupon and wallet applied.",
+ steps:["Note every line of the checkout summary.","Place the order.","Compare against the order record."],
+ ui:"Success page total matches the checkout summary.",
+ db:`db.orders.findOne({_id:ObjectId("<oid>")},{subtotal:1,couponDiscount:1,walletDiscount:1,discount:1,shippingCharge:1,tax:1,totalAmount:1})`,
+ expect:"Every field matches what was shown. discount = couponDiscount + walletDiscount"
+});
+add("pricing","PRICE-04","Shipping is free while live rates are off","high",{
+ pre:"<code>/admin/operations?tab=checkout</code> → 'Charge live courier rates' UNCHECKED (the default).",
+ steps:["Price any order."],
+ ui:"Shipping shows as free / zero.",
+ db:`db.checkoutsettings.findOne({},{shippingRatesEnabled:1})
+db.orders.findOne({_id:ObjectId("<oid>")},{shippingCharge:1})`,
+ expect:"shippingRatesEnabled false · shippingCharge 0",
+ why:"This default is load-bearing — switching it on is the difference between charging a customer nothing and charging them something, and must never happen as a side effect of a deploy."
+});
+add("pricing","PRICE-05","With rates on, a charge appears and reaches the total","high",{
+ pre:"Shiprocket credentials saved; tick 'Charge live courier rates'.",
+ steps:["Price an order to a serviceable pincode."],
+ ui:"A shipping line appears and is included in the total.",
+ db:`db.orders.findOne({_id:ObjectId("<oid>")},{subtotal:1,shippingCharge:1,totalAmount:1})`,
+ expect:"shippingCharge > 0 and included in totalAmount; rounded UP to the rupee"
+});
+add("pricing","PRICE-06","A COD order is quoted the COD rate","medium",{
+ pre:"Live rates ON, COD enabled.",
+ steps:["Price the same basket to the same pincode as COD, then as prepaid.","Compare the shipping lines."],
+ ui:"The two may differ — COD parcels cost the courier more to carry.",
+ why:"The rate request used to be hardcoded prepaid, so a cash order silently absorbed the COD handling fee. Inert while rates are off, which is why it is worth checking before you switch them on."
+});
+add("pricing","PRICE-07","Tax is zero and that is correct","medium",{
+ pre:"—",
+ steps:["Inspect any order's tax field."],
+ ui:"No tax line, or zero.",
+ db:`db.orders.findOne({_id:ObjectId("<oid>")},{tax:1,"bill.number":1})`,
+ expect:"tax 0",
+ why:"Printed books are nil-rated (HSN 4901) and the seller is not GST-registered, so the document issued is a bill of supply, not a tax invoice. Do not raise this as a defect."
+});
+add("pricing","PRICE-08","A free order (100% covered) still behaves","medium",{
+ pre:"A coupon plus wallet that together cover the whole subtotal.",
+ steps:["Try to check out at a zero total."],
+ ui:"Either handled cleanly as a zero-value order, or refused with a clear message — never a broken gateway call.",
+ db:`db.orders.findOne({_id:ObjectId("<oid>")},{totalAmount:1,paymentMethod:1,paymentStatus:1})`
+});
+
+/* ============================== 9. ORDER LIFECYCLE ============================== */
+add("lifecycle","LIFE-01","The status dropdown offers only legal next states","critical",{
+ pre:"Admin on an order at Confirmed.",
+ steps:["Open the status dropdown at <code>/admin/orders/:id</code>.","Compare the options against the table below."],
+ ui:"Only Packed, Shipped and Cancelled are offered.",
+ table:{head:["From","Allowed next"],rows:[
+  ["Pending","Confirmed · Packed · Cancelled"],
+  ["Confirmed","Packed · Shipped · Cancelled"],
+  ["Packed","Shipped · Cancelled"],
+  ["Shipped","Out For Delivery · Delivered · NDR · RTO"],
+  ["Out For Delivery","Delivered · NDR · RTO"],
+  ["NDR","Out For Delivery · Delivered · RTO"],
+  ["RTO","RTO Received"],
+  ["RTO Received","Closed"],
+  ["Delivered","Completed"],
+  ["Cancelled / Closed / Completed","terminal — nothing"]
+ ]},
+ why:"The same table is enforced on the server and on the courier webhook, so a replayed or out-of-order courier event cannot walk a status backwards either."
+});
+add("lifecycle","LIFE-02","An illegal transition is refused by the API too","critical",{
+ pre:"An order at Delivered.",
+ steps:["Call the status endpoint directly with <code>{\"orderStatus\":\"Shipped\"}</code>."],
+ api:"400 INVALID_STATUS_TRANSITION",
+ why:"The dropdown hides it; the server must refuse it. Delivered → Shipped used to lock customers out of returns while the window expired."
+});
+add("lifecycle","LIFE-03","Cancelled cannot be reached from the status dropdown","critical",{
+ pre:"An order at Confirmed.",
+ steps:["Select Cancelled in the dropdown and save."],
+ ui:"It opens the cancellation dialog instead of a plain status write.",
+ api:"A direct PATCH with orderStatus 'Cancelled' returns 400 USE_CANCEL_ENDPOINT",
+ why:"Cancellation carries compensation — restock, wallet, coupon release, refund record. A bare status edit would do none of it."
+});
+add("lifecycle","LIFE-04","A cancelled order can never be resurrected","critical",{
+ pre:"A cancelled order.",
+ steps:["Try to move it to Confirmed from the dropdown and via the API."],
+ ui:"No options offered.",
+ api:"400 — Cancelled is terminal",
+ why:"Stock was restored and never re-deducted, the coupon and wallet were returned and a refund may have been paid. Reopening it means money out AND goods out."
+});
+add("lifecycle","LIFE-05","Moving past Confirmed warns that self-cancel disappears","medium",{
+ pre:"An order at Pending or Confirmed.",
+ steps:["Choose Packed and save."],
+ ui:"A confirmation warns that the customer's self-cancel button will be removed.",
+ why:"Customers can only cancel pre-dispatch. Advancing the status silently removes their ability to do so."
+});
+add("lifecycle","LIFE-06","Delivering a COD order marks it Paid","critical",{
+ pre:"A COD order at Out For Delivery.",
+ steps:["Move it to Delivered."],
+ admin:"Payment flips to Paid.",
+ db:`db.orders.findOne({_id:ObjectId("<oid>")},{orderStatus:1,paymentStatus:1,deliveredAt:1})`,
+ expect:"orderStatus 'Delivered' · paymentStatus 'Paid' · deliveredAt stamped",
+ why:"For COD, delivery IS the payment event. Guarded so it cannot overwrite a refund already issued."
+});
+add("lifecycle","LIFE-07","deliveredAt is stamped once and never moved","high",{
+ pre:"A delivered order; note deliveredAt.",
+ steps:["Re-save the status as Delivered (a no-op).","Re-read."],
+ db:`db.orders.findOne({_id:ObjectId("<oid>")},{deliveredAt:1})`,
+ expect:"Unchanged from the first delivery",
+ why:"It anchors the return window. Re-stamping silently pushes a customer's return deadline forward."
+});
+add("lifecycle","LIFE-08","A bill of supply number is minted at delivery","high",{
+ pre:"An order about to be delivered.",
+ steps:["Move it to Delivered.","Read the bill block."],
+ db:`db.orders.findOne({_id:ObjectId("<oid>")},{bill:1})`,
+ expect:"bill.number set · bill.financialYear (Indian FY) · bill.sequence · bill.seller snapshot frozen",
+ why:"Numbers are sequential per financial year and minted once, by compare-and-swap. Two orders must never share one."
+});
+add("lifecycle","LIFE-09","Bill numbers do not repeat","high",{
+ pre:"Deliver two orders.",
+ steps:["Compare their bill numbers."],
+ db:`db.orders.find({"bill.number":{$ne:null}},{"bill.number":1}).toArray()`,
+ expect:"All distinct, sequential within the financial year"
+});
+add("lifecycle","LIFE-10","Internal notes are admin-only","medium",{
+ pre:"An order.",
+ steps:["Add an internal note in admin.","View the same order as the customer."],
+ ui:"The customer never sees it.",
+ db:`db.orders.findOne({_id:ObjectId("<oid>")},{adminNotes:1})`,
+ expect:"Note recorded with createdBy and a timestamp"
+});
+add("lifecycle","LIFE-11","Status history records who changed what","medium",{
+ pre:"An order moved through several statuses.",
+ steps:["Read statusHistory."],
+ db:`db.orders.findOne({_id:ObjectId("<oid>")},{statusHistory:1})`,
+ expect:"One entry per change with from, to, changedBy and source ('admin', 'customer', 'checkout', 'shiprocket_webhook', 'manual_shipment', 'abandoned_checkout_sweeper')"
+});
+add("lifecycle","LIFE-12","Completed closes self-service returns","medium",{
+ pre:"A delivered order inside its return window.",
+ steps:["Confirm the customer can still start a return.","Move the order to Completed.","Check again."],
+ ui:"The return option disappears once Completed.",
+ why:"Completed is the admin's explicit sign-off that the case is finished. It stays revenue — it is not a cancellation."
+});
+
+/* ============================== 10. SHIPPING ============================== */
+add("shipping","SHIP-01","Recording a manual shipment advances the order","critical",{
+ pre:"Shiprocket off (manual fulfilment). An order at Confirmed or Packed.",
+ steps:["In the Shipment card enter a courier name and tracking number.","Press Record Manual Shipment."],
+ admin:"The order advances to Shipped; carrier and tracking are shown.",
+ db:`db.orders.findOne({_id:ObjectId("<oid>")},{orderStatus:1,shipment:1})`,
+ expect:"shipment.provider 'MANUAL' · carrierName and trackingNumber set · orderStatus 'Shipped'"
+});
+add("shipping","SHIP-02","Recording the same shipment twice is a no-op","high",{
+ pre:"SHIP-01 done.",
+ steps:["Submit the identical carrier and tracking number again."],
+ ui:"Accepted without creating a second shipment or duplicating history.",
+ why:"It is create-or-correct by design — that is why it is a PUT."
+});
+add("shipping","SHIP-03","The customer sees the tracking number","high",{
+ pre:"SHIP-01 done.",
+ steps:["As the customer open <code>/account/orders/:id</code>."],
+ ui:"Courier name and tracking number are shown, with a note to track with the carrier directly for manual shipments."
+});
+add("shipping","SHIP-04","Fulfilment is refused on a non-fulfillable order","high",{
+ pre:"A Cancelled order, and separately a Closed one.",
+ steps:["Try to record a manual shipment on each."],
+ ui:"Refused.",
+ why:"Cancelled, Completed, RTO, RTO Received and Closed all refuse fulfilment. A parcel must not be created for an order that is finished or coming back."
+});
+add("shipping","SHIP-05","Shiprocket actions are hidden when it is off","medium",{
+ pre:"Shiprocket disabled at <code>/admin/operations?tab=shipping</code>.",
+ steps:["Open an order detail page."],
+ ui:"The Shiprocket lifecycle block is replaced by a notice explaining that shipment actions are unavailable.",
+ why:"Better than buttons that fail. Contrast with the manual shipment card, which stays available."
+});
+add("shipping","SHIP-06","A rate lookup failure ships free rather than blocking","medium",{
+ pre:"Live rates ON, then break the Shiprocket credentials.",
+ steps:["Price an order."],
+ ui:"Checkout still completes; shipping falls back to free.",
+ why:"Deliberately the OPPOSITE of the COD serviceability check (COD-06). A rate blip must not cost a sale; a serviceability blip must not create an undeliverable COD order."
+});
+add("shipping","SHIP-07","Full Shiprocket lifecycle","medium",{
+ pre:"Shiprocket credentials saved and shipments enabled. A paid order.",
+ steps:["Create Shipment.","Show couriers & rates, pick one, Assign AWB.","Schedule Pickup.","Generate Label, Invoice, Manifest."],
+ admin:"Each step fills in the Shiprocket block; label/invoice/manifest links open.",
+ db:`db.orders.findOne({_id:ObjectId("<oid>")},{shiprocket:1})`,
+ expect:"orderId, shipmentId, awbCode, courierName, syncStatus progress in step"
+});
+add("shipping","SHIP-08","A courier status update moves the order","high",{
+ pre:"Shiprocket webhook enabled and the token configured.",
+ steps:["Trigger or simulate a delivery webhook for the AWB."],
+ db:`db.orders.findOne({_id:ObjectId("<oid>")},{orderStatus:1,"statusHistory.source":1})`,
+ expect:"Status advanced with source 'shiprocket_webhook'",
+ why:"The webhook validates against the same transition table as the admin dropdown."
+});
+add("shipping","SHIP-09","A webhook naming two orders is refused","critical",{
+ pre:"Requires crafting a webhook payload; do this only if you can.",
+ steps:["Send an event whose identifiers resolve to more than one order, or to none."],
+ api:"Ignored/refused rather than applied to an arbitrary match.",
+ why:"A mis-resolved delivery event marks the WRONG order delivered — and for COD, paid. That books revenue never collected."
+});
+add("shipping","SHIP-10","Tracking polls while a parcel is in transit","medium",{
+ pre:"An order with an AWB.",
+ steps:["Open the customer order detail and leave it open ~60s."],
+ ui:"Tracking refreshes. If unavailable, a clear message rather than a blank panel.",
+ note:"The raw tracking payload is currently rendered as unformatted JSON — cosmetic, worth logging as a UI polish item rather than a bug."
+});
+
+/* ============================== 11. CANCELLATION & REFUNDS ============================== */
+add("cancel","CAN-01","A customer can cancel before dispatch","critical",{
+ pre:"A COD order at Confirmed. Note the product stock first.",
+ steps:["As the customer open the order and press Cancel.","Give a reason and confirm."],
+ ui:"Order shows Cancelled.",
+ db:`db.orders.findOne({_id:ObjectId("<oid>")},{orderStatus:1,paymentStatus:1,cancellation:1})
+db.products.findOne({_id:ObjectId("<pid>")},{stock:1,"variants.stock":1})`,
+ expect:"Cancelled · stock restored on BOTH product and variant · cancellation reason recorded",
+ why:"COD collected no money, so no refund is created — see CAN-03."
+});
+add("cancel","CAN-02","Cancelling after dispatch is refused","critical",{
+ pre:"An order at Shipped.",
+ steps:["As the customer, look for the cancel option. Then try the API directly."],
+ ui:"No cancel button.",
+ api:"Refused — Shipped is past the cancellable statuses",
+ why:"The parcel is with the courier. Unwinding it means a full refund AND a full restock while the parcel still delivers."
+});
+add("cancel","CAN-03","Cancelling an unpaid COD order creates NO refund","critical",{
+ pre:"CAN-01 done.",
+ steps:["Inspect the refunds array."],
+ db:`db.orders.findOne({_id:ObjectId("<oid>")},{refunds:1,paymentStatus:1})`,
+ expect:"refunds is empty · paymentStatus still 'Pending'",
+ why:"Never owe money to someone who did not pay. This is enforced at the invariant, not just in its callers."
+});
+add("cancel","CAN-04","Cancelling a PAID order records a refund owed","critical",{
+ pre:"A paid Razorpay order at Confirmed.",
+ steps:["Cancel it (customer or admin).","Inspect the order."],
+ admin:"Payment shows Refund Pending, then Refunded once settled.",
+ db:`db.orders.findOne({_id:ObjectId("<oid>")},{paymentStatus:1,refunds:1})`,
+ expect:"A refunds[] entry with amount = totalAmount, status 'created' then 'processed'",
+ why:"The refund RECORD is written before the gateway is called, so a timeout leaves a retryable record rather than an unknown."
+});
+add("cancel","CAN-05","The cancellation window closes self-service","high",{
+ pre:"Set Window (hours) to 1 at <code>/admin/operations?tab=checkout</code>. An order older than that.",
+ steps:["As the customer open the old order."],
+ ui:"No cancel button; the customer is pointed at support.",
+ api:"400 CANCEL_WINDOW_CLOSED",
+ db:`db.checkoutsettings.findOne({},{cancellationWindowHours:1})`,
+ expect:"0 means no limit — the default"
+});
+add("cancel","CAN-06","Admin can cancel past the customer's window","high",{
+ pre:"CAN-05 set up.",
+ steps:["As admin use 'Cancel order for customer…' with a reason."],
+ ui:"Succeeds where the customer was refused.",
+ db:`db.orders.findOne({_id:ObjectId("<oid>")},{orderStatus:1,cancellation:1})
+db.auditlogs.find({}).sort({_id:-1}).limit(2)`,
+ expect:"Cancelled · an audit log entry for the admin action",
+ why:"That is the point of the endpoint — past-window cancellations hand off to support. It still refuses shipped orders."
+});
+add("cancel","CAN-07","Cancelling releases the coupon and the wallet","critical",{
+ pre:"A paid order that used both a coupon and wallet credit. Note the wallet balance.",
+ steps:["Cancel the order.","Re-read the wallet and the coupon."],
+ db:`db.userprofiles.findOne({userid:ObjectId("<id>")},{walletBalance:1})
+db.couponmodels.findOne({couponId:"<CODE>"},{usage:1})
+db.couponredemptions.findOne({coupon:"<CODE>",user:ObjectId("<id>")})
+db.orders.findOne({_id:ObjectId("<oid>")},{walletRefunded:1})`,
+ expect:"Wallet credited back · coupon usage and the customer's count both decremented · walletRefunded records what was returned",
+ why:"walletRefunded caps the restore, so repeating the cancellation cannot pay the credit twice."
+});
+add("cancel","CAN-08","Cancelling twice does not double-refund","critical",{
+ pre:"A paid order.",
+ steps:["Cancel it.","Try to cancel again, and replay the request if you can."],
+ ui:"Second attempt refused — already cancelled.",
+ db:`db.orders.findOne({_id:ObjectId("<oid>")},{refunds:1,walletRefunded:1})`,
+ expect:"Exactly ONE refund record · wallet credited once · stock restored once",
+ why:"The cancellation is an atomic claim on the status, so only one caller performs the compensation."
+});
+add("cancel","CAN-09","Partial cancellation of one line","high",{
+ pre:"A paid order with 3 units of one book.",
+ steps:["In admin use Partial Cancellation for 1 unit with a reason."],
+ admin:"The line shows 1 cancelled, 2 remaining.",
+ db:`db.orders.findOne({_id:ObjectId("<oid>")},{"items.quantity":1,"items.cancelledQuantity":1,refunds:1,cancellations:1,orderStatus:1})`,
+ expect:"cancelledQuantity 1 · a proportional refund recorded · order stays open · that 1 unit restocked"
+});
+add("cancel","CAN-10","Cancelling every line closes the order","high",{
+ pre:"CAN-09 done.",
+ steps:["Partially cancel the remaining 2 units."],
+ admin:"The order becomes Cancelled.",
+ db:`db.orders.findOne({_id:ObjectId("<oid>")},{orderStatus:1,refunds:1,shippingCharge:1})`,
+ expect:"Cancelled · the shipping charge is refunded too once nothing ships"
+});
+add("cancel","CAN-11","A gateway refund needs the amount typed out","critical",{
+ pre:"A paid Razorpay order.",
+ steps:["Open Payment And Refunds, enter an amount, press Refund…","In the dialog, type a WRONG amount — confirm stays disabled.","Type the exact amount and confirm."],
+ ui:"Confirmation only unlocks on an exact match.",
+ db:`db.orders.findOne({_id:ObjectId("<oid>")},{refunds:1,paymentStatus:1})`,
+ expect:"One refund with providerRefundId, status 'processed'",
+ why:"One click, real money, irreversible. The typed amount is the deliberate speed bump."
+});
+add("cancel","CAN-12","A refund cannot exceed what is left","critical",{
+ pre:"A paid ₹1000 order with ₹400 already refunded.",
+ steps:["Try to refund ₹800."],
+ ui:"Capped at the ₹600 remaining, or refused.",
+ db:`db.orders.findOne({_id:ObjectId("<oid>")},{totalAmount:1,refunds:1})`,
+ expect:"Sum of non-failed refunds never exceeds totalAmount",
+ why:"The ceiling counts in-flight ('created') refunds too, deliberately conservative."
+});
+add("cancel","CAN-13","Repeating a refund does not pay twice","critical",{
+ pre:"A refunded order.",
+ steps:["Submit the same refund again with the same idempotency key."],
+ ui:"Answers 'Already refunded' rather than refunding again.",
+ db:`db.orders.findOne({_id:ObjectId("<oid>")},{refunds:1})`,
+ expect:"Still exactly one refund record"
+});
+add("cancel","CAN-14","A COD refund is owed, not auto-paid","critical",{
+ pre:"A DELIVERED COD order (so money was collected), then a return refund or cancellation.",
+ steps:["Trigger the refund.","Open <code>/admin/refunds/owed</code>."],
+ admin:"The order appears in Outstanding Refunds with an age badge.",
+ db:`db.orders.findOne({_id:ObjectId("<oid>")},{refunds:1})`,
+ expect:"A refunds[] entry with status 'owed' and confirmationMethod 'manual'",
+ why:"There is no card transaction to reverse — a human has to send money. The queue exists so that liability is visible."
+});
+add("cancel","CAN-15","Recording a manual payout needs a reference","high",{
+ pre:"CAN-14 done.",
+ steps:["Press Record manual payout.","Try to confirm with the reference blank.","Fill in a UTR and confirm."],
+ ui:"Blank reference is refused; with one it settles and leaves the queue.",
+ db:`db.orders.findOne({_id:ObjectId("<oid>")},{refunds:1,paymentStatus:1})`,
+ expect:"status 'processed' · method and reference stored · paymentStatus reflects the settled refund",
+ why:"The reference is the only proof the money left. Without it the payout is unauditable."
+});
+add("cancel","CAN-16","A failed gateway refund does NOT show as refunded","critical",{
+ pre:"Hard to force; check the code path or simulate a refund.failed webhook.",
+ steps:["Cause or simulate a refund failure."],
+ db:`db.orders.findOne({_id:ObjectId("<oid>")},{refunds:1,paymentStatus:1})`,
+ expect:"The failed refund is excluded from the settled sum and paymentStatus drops back to Paid",
+ why:"'Refunded' must derive from money that actually moved, never from intent."
+});
+
+/* ============================== 12. RETURNS ============================== */
+add("returns","RET-01","Returns are only offered after delivery","critical",{
+ pre:"An order at Shipped.",
+ steps:["As the customer look for Request Return.","Move the order to Delivered and look again."],
+ ui:"Unavailable before delivery; available after."
+});
+add("returns","RET-02","The return window is per product","high",{
+ pre:"Two products with different returnPolicy windowDays.",
+ steps:["Open the return dialog on an order containing both."],
+ ui:"Each item shows its own window; non-returnable items are excluded entirely.",
+ db:`db.products.findOne({_id:ObjectId("<pid>")},{returnPolicy:1})`
+});
+add("returns","RET-03","A COD return asks where to send the money","critical",{
+ pre:"A delivered COD order.",
+ steps:["Start a refund return."],
+ ui:"A bank/UPI destination is required before submitting.",
+ db:`db.returnrequests.findOne({_id:ObjectId("<rid>")},{refundDestination:1,resolutionType:1})`,
+ expect:"refundDestination captured",
+ why:"There is no card payment to reverse. Without a destination the refund cannot be paid at all."
+});
+add("returns","RET-04","Customer submits and can track the request","high",{
+ pre:"A delivered order.",
+ steps:["Submit a return with reason and quantity.","Open <code>/account/returns</code> and then the detail page."],
+ ui:"Listed as pending with a step tracker.",
+ db:`db.returnrequests.findOne({_id:ObjectId("<rid>")},{status:1,quantity:1,product:1,order:1})`,
+ expect:"status 'pending'"
+});
+add("returns","RET-05","Quantity cannot exceed what was ordered","high",{
+ pre:"An order line of 2 units.",
+ steps:["Try to return 5."],
+ ui:"Capped at 2.",
+ why:"Units already cancelled are excluded too — a fully cancelled line has nothing left to return."
+});
+add("returns","RET-06","Approve → schedule pickup → receive","critical",{
+ pre:"RET-04 done. Admin at <code>/admin/returns</code>.",
+ steps:["Approve Return.","Schedule Pickup (or arrange collection yourself).","Mark as Received."],
+ admin:"Status moves pending → approved → pickup_scheduled → received.",
+ db:`db.returnrequests.findOne({_id:ObjectId("<rid>")},{status:1})`,
+ expect:"'received'",
+ why:"Refund and replacement are only reachable from 'received'. QC cannot be skipped."
+});
+add("returns","RET-07","Refunding requires a disposition decision","critical",{
+ pre:"RET-06 done.",
+ steps:["Press Refund.","In the dialog choose Resellable or Damaged — note there is no default."],
+ admin:"You must choose before the refund proceeds.",
+ db:`db.returnrequests.findOne({_id:ObjectId("<rid>")},{status:1,disposition:1,restockedAt:1})`,
+ expect:"disposition recorded · status 'refunded'",
+ why:"Before this existed, a faulty item was refunded AND put back on sale. The admin's only alternative was to reject a legitimate refund."
+});
+add("returns","RET-08","Resellable restocks; damaged does not","critical",{
+ pre:"Note product stock. Run two returns, one of each disposition.",
+ steps:["Resolve one Resellable and one Damaged.","Compare stock after each."],
+ db:`db.products.findOne({_id:ObjectId("<pid>")},{stock:1,"variants.stock":1})`,
+ expect:"Resellable: stock +qty. Damaged: stock UNCHANGED",
+ why:"This is the whole point of the disposition — money back to the customer without putting a broken book back on sale."
+});
+add("returns","RET-09","A refund cannot be issued before QC","critical",{
+ pre:"A return at 'approved'.",
+ steps:["Try to refund it."],
+ ui:"Not offered; the API refuses.",
+ why:"received is mandatory. Otherwise you refund goods you have not seen."
+});
+add("returns","RET-10","A rejected return is terminal","high",{
+ pre:"A pending return.",
+ steps:["Reject it with a note.","Try to refund or reopen it."],
+ db:`db.returnrequests.findOne({_id:ObjectId("<rid>")},{status:1,adminNote:1})`,
+ expect:"'rejected' · note required · no further transitions"
+});
+add("returns","RET-11","Replacement lifecycle","medium",{
+ pre:"A received return with resolutionType replacement.",
+ steps:["Dispatch Replacement (with disposition and courier/AWB).","Confirm Replacement Delivered."],
+ db:`db.returnrequests.findOne({_id:ObjectId("<rid>")},{status:1,replacementAwb:1})`,
+ expect:"replacement_dispatched → replacement_delivered · outbound stock deducted for the replacement unit"
+});
+add("returns","RET-12","A refund return on a fully refunded order is refused","high",{
+ pre:"An order already fully refunded.",
+ steps:["Try to create a refund return on it.","Then try a REPLACEMENT return."],
+ api:"Refund return refused (ORDER_ALREADY_REFUNDED); replacement still allowed",
+ why:"Correct — a replacement needs no money."
+});
+add("returns","RET-13","Two open returns for one line are impossible","medium",{
+ pre:"An open return on a line.",
+ steps:["Try to raise a second return for the same line."],
+ ui:"Refused while one is open.",
+ why:"One OPEN return per line. A rejected one frees the slot again."
+});
+
+/* ============================== 13. RTO ============================== */
+add("rto","RTO-01","RTO can only be reached from a dispatched status","high",{
+ pre:"Orders at Confirmed and at Shipped.",
+ steps:["Try to set RTO on each."],
+ ui:"Offered only from Shipped, Out For Delivery or NDR.",
+ why:"A parcel cannot return if it never left."
+});
+add("rto","RTO-02","RTO → RTO Received → Closed, and nothing else","critical",{
+ pre:"An order at RTO.",
+ steps:["Inspect the dropdown at RTO, then at RTO Received."],
+ ui:"RTO offers only RTO Received. RTO Received offers only Closed.",
+ why:"RTO covers 'coming back'; RTO Received is the parcel physically on the shelf. Restock and any refund hang off ARRIVAL, not off the courier giving up."
+});
+add("rto","RTO-03","Arriving does not restock until a human inspects it","critical",{
+ pre:"An order at RTO Received. Note the stock.",
+ steps:["Check stock before recording any disposition."],
+ db:`db.products.findOne({_id:ObjectId("<pid>")},{stock:1})
+db.orders.findOne({_id:ObjectId("<oid>")},{rtoDisposition:1,rtoRestockedAt:1})`,
+ expect:"Stock unchanged · rtoDisposition empty · rtoRestockedAt null",
+ why:"Only a person opening the parcel can say whether the contents are sellable."
+});
+add("rto","RTO-04","Closing an RTO requires the parcel condition","critical",{
+ pre:"An order at RTO Received.",
+ steps:["Press 'Record parcel condition & close…'.","Try to close without choosing a condition.","Choose Resellable and close."],
+ ui:"Condition is mandatory.",
+ api:"409 RTO_DISPOSITION_REQUIRED without it",
+ db:`db.orders.findOne({_id:ObjectId("<oid>")},{orderStatus:1,rtoDisposition:1,rtoRestockedAt:1})
+db.products.findOne({_id:ObjectId("<pid>")},{stock:1})`,
+ expect:"Closed · disposition 'resellable' · rtoRestockedAt stamped · stock increased"
+});
+add("rto","RTO-05","Damaged RTO closes without restocking","critical",{
+ pre:"Another order at RTO Received.",
+ steps:["Close it as Damaged / not resellable."],
+ db:`db.orders.findOne({_id:ObjectId("<oid>")},{orderStatus:1,rtoDisposition:1})
+db.products.findOne({_id:ObjectId("<pid>")},{stock:1})`,
+ expect:"Closed · disposition 'damaged' · stock UNCHANGED"
+});
+add("rto","RTO-06","A PREPAID RTO owes the customer a refund","critical",{
+ pre:"A paid Razorpay order taken through to RTO Received.",
+ steps:["Check <code>/admin/refunds/owed</code>."],
+ admin:"The order appears with an RTO badge.",
+ db:`db.orders.findOne({_id:ObjectId("<oid>")},{refunds:1,paymentMethod:1})`,
+ expect:"A refunds[] entry with status 'owed'",
+ why:"They paid and received nothing. No refund is issued automatically — the queue exists so it is not forgotten."
+});
+add("rto","RTO-07","A COD RTO owes nothing","critical",{
+ pre:"A COD order taken to RTO Received.",
+ steps:["Check the refunds array and the owed queue."],
+ db:`db.orders.findOne({_id:ObjectId("<oid>")},{refunds:1,paymentStatus:1})`,
+ expect:"refunds empty · paymentStatus still 'Pending'",
+ why:"They never paid. Creating a refund here would pay a customer who owed money."
+});
+add("rto","RTO-08","A Closed order is not revenue","high",{
+ pre:"A Closed RTO order.",
+ steps:["Run the sales report at <code>/admin/operations?tab=reports</code> covering that date."],
+ ui:"The Closed order is excluded from revenue.",
+ why:"Cancelled never shipped; Closed shipped and came back. Both are excluded, but they mean different things — which is why Closed exists rather than overloading Cancelled."
+});
+add("rto","RTO-09","Duplicate RTO events restock only once","high",{
+ pre:"Shiprocket webhook available.",
+ steps:["Replay the same RTO-delivered event several times."],
+ db:`db.products.findOne({_id:ObjectId("<pid>")},{stock:1})
+db.orders.findOne({_id:ObjectId("<oid>")},{rtoRestockedAt:1})`,
+ expect:"Stock rises once; rtoRestockedAt is the claim that prevents repeats"
+});
+add("rto","RTO-10","An RTO order cannot be re-dispatched","high",{
+ pre:"An order at RTO or RTO Received.",
+ steps:["Try every fulfilment action: create shipment, assign AWB, pickup, label, manual shipment."],
+ ui:"All refused."
+});
+
+/* ============================== 14. INVENTORY ============================== */
+add("inventory","INV-01","Variant stock is the binding limit","critical",{
+ pre:"Any seeded book: E-book sits at stock 0 while the product total is 38. Or split a product 10/0 yourself.",
+ steps:["Try to buy 1 Hardcover."],
+ ui:"Refused as out of stock even though the product total is far higher.",
+ db:`db.products.findOne({_id:ObjectId("<pid>")},{stock:1,"variants.name":1,"variants.stock":1})`,
+ why:"product.stock is the SUM across variants. Checking it alone sells a sold-out format."
+});
+add("inventory","INV-02","Stock cannot go negative under concurrency","critical",{
+ pre:"A product with exactly 1 unit left.",
+ steps:["Two customers in two browsers both add it and check out as close together as possible."],
+ ui:"One succeeds; the other is refused with 'no longer has enough stock'.",
+ db:`db.products.findOne({_id:ObjectId("<pid>")},{stock:1,"variants.stock":1})`,
+ expect:"Stock 0, never −1",
+ why:"The decrement constrains both the product total and the variant in one conditional update — it applies to both or to neither."
+});
+add("inventory","INV-03","Cancelling restocks exactly what was sold","critical",{
+ pre:"An order for 2 units, 1 already partially cancelled.",
+ steps:["Cancel the whole order.","Compare stock."],
+ db:`db.products.findOne({_id:ObjectId("<pid>")},{stock:1})`,
+ expect:"Only the 1 remaining unit is restocked — the already-cancelled unit is not restocked twice"
+});
+add("inventory","INV-04","Admin stock edit refuses a stale value","high",{
+ pre:"Open <code>/admin/inventory</code> in two tabs.",
+ steps:["Edit the same product's stock in both.","Save one, then save the other."],
+ ui:"The second save is refused (409) rather than silently overwriting.",
+ why:"Optimistic concurrency on expectedStock — otherwise a concurrent sale is erased by an admin edit."
+});
+add("inventory","INV-05","A variant-managed product refuses a total-level stock write","high",{
+ pre:"A product with variants.",
+ steps:["Try to set the product-level total directly."],
+ ui:"Refused with a message to edit the per-variant quantities instead.",
+ why:"Setting the total says nothing about how it splits between variants, and there is no honest way to infer it."
+});
+add("inventory","INV-06","Low stock threshold drives the dashboard","medium",{
+ pre:"A product with stock 3.",
+ steps:["Set the low-stock threshold to 5 on the Dashboard or Inventory page.","Reload the dashboard."],
+ ui:"The product appears as low stock.",
+ db:`db.inventorysettings.findOne({})`,
+ expect:"lowStockThreshold 5"
+});
+add("inventory","INV-07","Reservations release on expiry","high",{
+ pre:"An abandoned prepaid checkout (RZP-08).",
+ steps:["Watch the reservation over the expiry window."],
+ db:`db.stockreservations.find({user:ObjectId("<id>")}).sort({_id:-1}).limit(2)`,
+ expect:"status moves from 'active' to released; the units come back to the product"
+});
+add("inventory","INV-08","Concurrent release restocks once","high",{
+ pre:"Hard to force by hand — covered by the automated suite.",
+ steps:["Prefer <code>npm run test:inventory</code>."],
+ ui:"—",
+ why:"Release is a compare-and-swap; several concurrent releases restock exactly once."
+});
+
+/* ============================== 15. ADMIN & PERMISSIONS ============================== */
+add("admin","ADM-01","An admin cannot place an order","critical",{
+ pre:"Logged in as an admin.",
+ steps:["Add to cart and try to check out."],
+ ui:"Refused — admin accounts cannot purchase.",
+ api:"403",
+ why:"Keeps staff purchases out of revenue figures and out of the customer flows."
+});
+add("admin","ADM-02","Role permission matrix","critical",{
+ pre:"Create one account per role via <code>npm run admin:upsert -- --email=… --roles=…</code>.",
+ steps:["Log in as each role in turn.","Confirm which sidebar sections appear.","Then type a forbidden URL directly."],
+ ui:"Forbidden pages show an access-restricted panel, not the page.",
+ table:{head:["Role","Can reach"],rows:[
+  ["superAdmin / admin","everything"],
+  ["orderManager","dashboard, orders, returns, reports"],
+  ["productManager","dashboard, products, categories, inventory, bulk"],
+  ["salesManager","dashboard, orders, returns, coupons, reports, referrals, reviews, contact, analytics"],
+  ["themeEditor","dashboard, CMS, theme, banners, policies"]
+ ]},
+ why:"Before this was enforced, a themeEditor could read every customer's orders and PII through a direct API call — the UI hid the link, the API never checked."
+});
+add("admin","ADM-03","A forbidden ADMIN API call is refused, not just hidden","critical",{
+ pre:"A themeEditor token.",
+ steps:["Call <code>GET /api/v1/order/all</code> with it.","Call <code>PATCH /api/v1/order/:id/status</code>."],
+ api:"403 on both",
+ why:"Hiding a nav item is not access control. This is the case that matters."
+});
+add("admin","ADM-04","A plain user granted a permission is still refused","critical",{
+ pre:"A 'user' role account granted orders:manage directly via Operations → Permissions.",
+ steps:["Try to reach the admin order endpoints."],
+ api:"403 — an admin ROLE is required as well as the permission",
+ why:"Otherwise a permission grant silently promotes a customer to staff."
+});
+add("admin","ADM-05","A customer cannot read another customer's order","critical",{
+ pre:"Two customers, A and B, each with an order.",
+ steps:["As A, call <code>GET /api/v1/order/&lt;B's order id&gt;</code>.","Try the same in the browser URL."],
+ api:"403 / not found",
+ why:"Classic IDOR. Ownership is checked server-side, not by hiding links."
+});
+add("admin","ADM-06","A customer cannot read another's return","critical",{
+ pre:"Returns belonging to A and B.",
+ steps:["As A, request B's return by id."],
+ api:"403 / not found"
+});
+add("admin","ADM-07","Bank details are masked for the owner","high",{
+ pre:"A COD return with a refund destination.",
+ steps:["View it as the customer.","View it as an admin with returns:manage."],
+ ui:"Customer sees the account number masked to the last four digits; the admin sees what they need to pay it."
+});
+add("admin","ADM-08","Orders list filters and export","medium",{
+ pre:"Several orders.",
+ steps:["Filter by status, then by date range, then sort.","Press Export Excel."],
+ ui:"Filters narrow correctly; the export downloads and matches what is on screen."
+});
+add("admin","ADM-09","Batched status edits save together","medium",{
+ pre:"<code>/admin/orders</code> with several rows.",
+ steps:["Change the status on three rows.","Press Save Changes (3).","Then try Discard on a fresh batch."],
+ ui:"All three apply; Discard reverts staged edits without saving.",
+ why:"Choosing Cancelled / Closed / Completed never stages — it opens the proper dialog instead."
+});
+
+/* ============================== 16. REPORTS ============================== */
+add("reports","REP-01","Sales report excludes cancelled, closed and unpaid","critical",{
+ pre:"A date range containing a paid order, a cancelled order, a Closed RTO and an abandoned prepaid checkout.",
+ steps:["<code>/admin/operations?tab=reports</code>, set the range, Run Report."],
+ ui:"Revenue counts ONLY the paid, non-cancelled order.",
+ db:`db.orders.find({createdAt:{$gte:ISODate("<from>")}},{orderStatus:1,paymentStatus:1,paymentMethod:1,totalAmount:1}).toArray()`,
+ expect:"Report total = sum of orders excluding Cancelled, Closed, and RAZORPAY+Pending",
+ why:"An abandoned checkout is a real database row. Counting it is the single most likely way this design goes wrong."
+});
+add("reports","REP-02","COD reconciliation surfaces mismatches","high",{
+ pre:"—",
+ steps:["Open the COD Payments Check tab and press Re-check."],
+ ui:"Four buckets: cash collected but not recorded, paid but never delivered, RTO still marked paid, delivered without a date.",
+ why:"Read-only by design — it reports, it does not fix."
+});
+add("reports","REP-03","Coupon usage report and CSV","medium",{
+ pre:"A coupon used at least once.",
+ steps:["Open Coupon Usage, then Export CSV."],
+ ui:"Usage count matches reality; the CSV downloads with matching rows.",
+ db:`db.couponmodels.findOne({couponId:"<CODE>"},{usage:1,maxLimit:1,globalMaxRedemptions:1})`,
+ expect:"Report usageCount equals coupon.usage; the CSV now carries a globalMaxRedemptions column"
+});
+add("reports","REP-04","Audit log records admin actions","high",{
+ pre:"Perform an admin-cancel and a refund.",
+ steps:["Open Activity Log, filter to today, then Export Audit Logs."],
+ ui:"Both actions appear with the acting admin; the CSV downloads.",
+ db:`db.auditlogs.find({}).sort({_id:-1}).limit(5)`
+});
+add("reports","REP-05","System health reports honestly","high",{
+ pre:"—",
+ steps:["Open System Health and Refresh."],
+ ui:"Checks grouped ok / warn / critical / off.",
+ why:"Look specifically for the Mongo replica-set check. If it is not a replica set, every transactional path fails and checkout is fully down — this check is the early warning."
+});
+add("reports","REP-06","Product bulk import reports rejects","medium",{
+ pre:"A CSV with one valid row, one with a price above MRP and one with a bad stock value.",
+ steps:["Operations → Bulk Import, choose the file, Import Products."],
+ ui:"Valid row imports; the others are reported as priceRejected / stockSkipped rather than silently dropped."
+});
+
+/* ============================== 17. EMAILS ============================== */
+add("email","EM-01","Order placed email","high",{
+ pre:"SMTP configured (<code>npm run test:smtp</code> passes).",
+ steps:["Place an order.","Check the customer inbox."],
+ ui:"Order confirmation arrives with the order reference and totals.",
+ why:"Sent fire-and-forget AFTER the order is durable — a mail failure must never fail a placed order."
+});
+add("email","EM-02","COD OTP email","critical",{
+ pre:"COD enabled.",
+ steps:["Request a COD OTP.","Check the inbox."],
+ ui:"OTP arrives promptly and works.",
+ note:"SMS delivery is deliberately not implemented — it throws 'not available yet'. Email is the only channel."
+});
+add("email","EM-03","Order cancelled email","high",{
+ pre:"An order.",
+ steps:["Cancel it.","Check the inbox."],
+ ui:"Cancellation email arrives, stating whether a refund was raised."
+});
+add("email","EM-04","Order completed and closed emails","medium",{
+ pre:"A delivered order, and an RTO Received order.",
+ steps:["Move one to Completed and the other to Closed.","Check the inbox for each."],
+ ui:"Both emails arrive and describe the right outcome."
+});
+add("email","EM-05","Verification and reset emails resolve to a reachable URL","high",{
+ pre:"—",
+ steps:["Trigger both.","Click the links from the machine under test."],
+ ui:"Both land on the running frontend.",
+ why:"The links are built from FRONTEND_URL / RESET_PASSWORD_FRONTEND_URL. A wrong value produces a perfectly-sent, completely useless email."
+});
+add("email","EM-06","Notification events are recorded even when channels are off","medium",{
+ pre:"NOTIFICATIONS_ENABLED false (the default).",
+ steps:["Place an order.","Inspect notification events."],
+ db:`db.notificationevents.find({}).sort({_id:-1}).limit(5)`,
+ expect:"Rows written with status 'skipped'",
+ why:"SMS and WhatsApp adapters are no-ops today. The events are still recorded so the queue can be replayed if channels are enabled later."
+});
+
+/* ============================== 18. SECURITY ============================== */
+add("security","SEC-01","Auth rate limit","high",{
+ pre:"—",
+ steps:["Submit wrong credentials repeatedly (>30 within 15 minutes)."],
+ ui:"Further attempts are refused with 429 until the window passes.",
+ why:"Limit: 30 per 15 minutes."
+});
+add("security","SEC-02","Coupon rate limit blocks code-spraying","high",{
+ pre:"—",
+ steps:["Try >25 invalid coupon codes within 10 minutes."],
+ ui:"429 once the limit is hit.",
+ why:"Without it, valid codes can be enumerated by brute force."
+});
+add("security","SEC-03","Refund rate limit","high",{
+ pre:"Admin.",
+ steps:["Attempt more than 10 refund calls in a minute."],
+ ui:"429.",
+ why:"The endpoint moves real money irreversibly. The limit caps how fast a duplicate-refund race can even be attempted; the atomic claim is what decides the winner."
+});
+add("security","SEC-04","Payment webhook rejects a bad signature","critical",{
+ pre:"An API client.",
+ steps:["POST to <code>/api/v1/payment/razorpay/webhook</code> with a payload and a wrong signature header."],
+ api:"Rejected. No order is created or promoted.",
+ db:`db.orders.find({}).sort({_id:-1}).limit(1)`,
+ expect:"No new order",
+ why:"The webhook is unauthenticated by design — the signature IS the authentication. If a forged body is accepted, anyone can mark orders paid."
+});
+add("security","SEC-05","Shipping webhook rejects a bad token","critical",{
+ pre:"—",
+ steps:["POST to <code>/api/v1/order/shipping/webhook</code> with a wrong token."],
+ api:"Rejected; no status change.",
+ why:"A forged delivery event marks an order Delivered and, for COD, Paid — booking revenue never collected."
+});
+add("security","SEC-06","A duplicate webhook event is processed once","critical",{
+ pre:"A real or replayed webhook.",
+ steps:["Send the same event id twice."],
+ db:`db.webhookevents.find({eventId:"<id>"}).toArray()`,
+ expect:"One row; the duplicate answers 200 without re-processing",
+ why:"Replay protection is a unique index, not an application check, so concurrent duplicates race and exactly one wins."
+});
+add("security","SEC-07","Refund amount cannot be dictated by the client","critical",{
+ pre:"A paid ₹500 order, admin token.",
+ steps:["Call the refund endpoint with an amount of ₹50000."],
+ api:"Capped at the outstanding balance, or refused.",
+ db:`db.orders.findOne({_id:ObjectId("<oid>")},{totalAmount:1,refunds:1})`,
+ expect:"No refund exceeds totalAmount"
+});
+add("security","SEC-08","Return fields the client must not control","critical",{
+ pre:"—",
+ steps:["Submit a return with injected <code>refundAmount</code>, <code>status</code> and <code>returnStatus</code> fields."],
+ db:`db.returnrequests.findOne({_id:ObjectId("<rid>")},{status:1,refundAmount:1})`,
+ expect:"status 'pending' · refundAmount server-computed, ignoring the injected value"
+});
+add("security","SEC-09","Uploads reject a non-image","medium",{
+ pre:"Admin.",
+ steps:["Try to upload a .txt or .svg renamed to .png as a product image."],
+ ui:"Rejected or safely stored without being served as active content."
+});
+add("security","SEC-10","Session expiry and refresh","medium",{
+ pre:"Logged in.",
+ steps:["Leave the session idle past the token lifetime.","Act again."],
+ ui:"Either refreshed transparently or sent to login — never a silent failure that looks like data loss."
+});
+
+/* ============================== 19. AUTOMATED ============================== */
+add("auto","AUT-01","Backend regression suites all pass","critical",{
+ pre:"Local Mongo as replica set rs0; .env pointing at a LOCAL database.",
+ steps:["<code>cd kitab-shop-be &amp;&amp; npm test</code>","Wait for the summary."],
+ cmd:`cd kitab-shop-be && npm test`,
+ ui:"Ends with 'All 37 suites passed.'",
+ why:"These run against a REAL database, because every bug they cover was an atomicity or concurrency bug that a mock would happily pass. Expect them to create and delete fixtures."
+});
+add("auto","AUT-02","Unit tests pass","high",{
+ pre:"—",
+ steps:["<code>npm run test:unit</code>"],
+ cmd:`cd kitab-shop-be && npm run test:unit`,
+ ui:"41 tests, 41 pass."
+});
+add("auto","AUT-03","Run a single suite while investigating","medium",{
+ pre:"—",
+ steps:["Use the per-suite scripts when chasing one area."],
+ cmd:`npm run test:money          # refunds, coupons, wallet
+npm run test:inventory      # stock and reservations
+npm run test:returns        # return lifecycle
+npm run test:lifecycle      # status transitions + revenue guards
+npm run test:security       # IDOR and permissions`,
+ ui:"Each prints its own pass/fail tally."
+});
+add("auto","AUT-04","Playwright smoke scripts","medium",{
+ pre:"<code>pip install playwright &amp;&amp; playwright install chromium</code>. A seeded throwaway database.",
+ steps:["Follow <code>kitab-shop-fe/e2e/README.md</code> exactly — it needs <code>vite preview</code>, not <code>vite dev</code>.","Run admin_routes.py and customer_checkout.py."],
+ ui:"Every route renders without a page error or a render-loop error.",
+ why:"These are SMOKE tests only — they assert a route rendered, not that business rules hold. Everything in this plan's other tabs is still manual.",
+ note:"images_load.py contains a '/astrologers' route left over from another project; it will 404. Not a defect in this app."
+});
+add("auto","AUT-05","Coupon migration check before deploying","critical",{
+ pre:"Deploying the current code to an environment with existing coupon data.",
+ steps:["Run the check first — it writes nothing.","Confirm the collection name printed is <code>couponmodels</code>.","Then run it for real, BEFORE the new code serves traffic."],
+ cmd:`npm run migrate:coupon-redemptions -- --check   # report only
+npm run migrate:coupon-redemptions              # apply`,
+ ui:"Prints the collection read, the coupon count and the rows it would write.",
+ why:"Per-customer redemptions moved out of the coupon document into their own collection. Until the migration runs, the new code reads an empty collection and a customer can re-spend a coupon they have already used."
+});
+
+/* ============================== 20. RECENT FIXES ============================== */
+add("fixes","FIX-01","F1 — a variant is charged its own price","critical",{
+ pre:"<strong>The Quiet Between Waves</strong> — base ₹399, Hardcover ₹599.",
+ steps:["Buy the Hardcover variant end to end.","Compare product page → cart → checkout → order."],
+ ui:"₹599 at every step.",
+ db:`db.orders.findOne({_id:ObjectId("<oid>")},{"items.price":1,subtotal:1,totalAmount:1})`,
+ expect:"items[].price 599. Verified live 16 Sep 2026: the page showed ₹599 and prepareOrderData charged ₹599.",
+ why:"Before the fix the page showed ₹599 and the order charged ₹399. Both audits missed it because they traced refunds outward from totalAmount, which was internally consistent — the input price was wrong."
+});
+add("fixes","FIX-02","F1b — a variant with no price of its own is unaffected","critical",{
+ pre:"A product whose variants carry no price.",
+ steps:["Buy it."],
+ db:`db.orders.findOne({_id:ObjectId("<oid>")},{"items.price":1})`,
+ expect:"items[].price equals product.price exactly as before",
+ why:"The fallback is load-bearing — the whole existing catalogue relies on it."
+});
+add("fixes","FIX-03","F2 — abandoning a prepaid checkout does not spend a coupon","critical",{
+ pre:"An unused coupon.",
+ steps:["Repeat CPN-06."],
+ ui:"The coupon survives the abandoned checkout.",
+ why:"Previously the coupon vanished from the customer's list forever, while checkout would still have accepted it."
+});
+add("fixes","FIX-04","F3 — a multi-use coupon stays visible","high",{
+ pre:"A coupon with maxLimit 2, used once.",
+ steps:["Repeat CPN-05."],
+ ui:"Still listed and still usable."
+});
+add("fixes","FIX-05","F5 — the total redemption budget holds","critical",{
+ pre:"A coupon with a budget of 2.",
+ steps:["Repeat CPN-07 and CPN-10."],
+ db:`db.couponmodels.findOne({couponId:"<CODE>"},{usage:1,globalMaxRedemptions:1})
+db.couponredemptions.find({coupon:"<CODE>"}).toArray()`,
+ expect:"usage never exceeds the budget · one redemption row per customer"
+});
+add("fixes","FIX-06","F5b — an admin edit does not reset the usage counter","high",{
+ pre:"A coupon with redemptions recorded.",
+ steps:["Note coupon.usage.","Edit something unrelated on that coupon in admin (e.g. the discount value) and save.","Re-read usage."],
+ db:`db.couponmodels.findOne({couponId:"<CODE>"},{usage:1})`,
+ expect:"Unchanged",
+ why:"usage used to be recomputed from an array on every save, so an ordinary admin edit rewrote the number the budget is measured against. That is why the cap could not rest on it before."
+});
+add("fixes","FIX-07","F6 — split shipments are gone","medium",{
+ pre:"Admin on an order detail page.",
+ steps:["Look at the Partial Cancellation card.","Call <code>POST /api/v1/order/:id/split-shipments</code> directly."],
+ ui:"No split-shipment textarea; the card is titled 'Partial Cancellation'.",
+ api:"404 — the route no longer exists",
+ why:"It wrote a field nothing ever read. One parcel per order is a property of the Shiprocket integration, not just of that endpoint."
+});
+add("fixes","FIX-08","F7 — My Orders is capped","medium",{
+ pre:"A customer with several orders.",
+ steps:["Call <code>GET /api/v1/order/my-orders?limit=2</code>."],
+ api:"Returns 2 orders, but `total` reports the true count and `returned` reports 2.",
+ why:"It used to return every order a customer had ever placed, fully populated."
+});
+add("fixes","FIX-09","F7 — guest-checkout wording is gone","medium",{
+ pre:"Logged out.",
+ steps:["Add to cart and press checkout."],
+ ui:"Sent to login. Nothing anywhere claims guest checkout is possible.",
+ why:"There is no guest checkout: /checkout is behind a route guard and every order endpoint requires a token."
+});
+</script>
+<script>
+(function(){
+"use strict";
+const KEY = "kitab-qa-testplan-v1";
+const STATES = ["pass","fail","block","na"];
+const LABEL = {pass:"Pass", fail:"Fail", block:"Blocked", na:"N/A", todo:"Not run"};
+
+/* localStorage may be unavailable (private window, blocked site data). The page
+   must render and stay usable either way, so every access is guarded. */
+let store = {};
+try { store = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (_) { store = {}; }
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (_) {} };
+const rec = (id) => store[id] || (store[id] = {state:"", note:""});
+
+let active = TABS[0].id;
+let openIds = new Set();
+let expandedAll = false;
+
+const esc = (s) => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const el = (h) => { const d = document.createElement("div"); d.innerHTML = h.trim(); return d.firstElementChild; };
+const casesFor = (tab) => T.filter(c => c.tab === tab);
+
+function matches(c){
+  const q = document.getElementById("q").value.trim().toLowerCase();
+  const fs = document.getElementById("fstate").value;
+  const fp = document.getElementById("fpri").value;
+  if (fp && c.pri !== fp) return false;
+  const st = (store[c.id] && store[c.id].state) || "todo";
+  if (fs && st !== fs) return false;
+  if (q) {
+    const hay = [c.id, c.title, c.pre, c.ui, c.admin, c.api, c.db, c.expect, c.why, c.note, c.cmd,
+                 (c.steps||[]).join(" ")].filter(Boolean).join(" ").toLowerCase();
+    if (!hay.includes(q)) return false;
+  }
+  return true;
+}
+
+function tally(list){
+  const t = {pass:0, fail:0, block:0, na:0, todo:0};
+  list.forEach(c => { const s = (store[c.id] && store[c.id].state) || "todo"; t[s]++; });
+  return t;
+}
+
+function renderNav(){
+  const nav = document.getElementById("nav");
+  nav.innerHTML = "";
+  let group = null;
+  TABS.forEach(tab => {
+    if (tab.group !== group) {
+      group = tab.group;
+      nav.appendChild(el(`<li class="navgroup">${esc(group)}</li>`));
+    }
+    const list = casesFor(tab.id);
+    const t = tally(list);
+    const done = list.length - t.todo;
+    const li = el(`<li><button type="button" aria-current="${tab.id===active}">
+      <span>${esc(tab.name)}</span><span class="n">${done}/${list.length}</span></button></li>`);
+    li.querySelector("button").addEventListener("click", () => { active = tab.id; render(); window.scrollTo(0,0); });
+    nav.appendChild(li);
+  });
+}
+
+function renderMeter(){
+  const t = tally(T);
+  const total = T.length;
+  const pct = (n) => (n/total*100).toFixed(2) + "%";
+  document.getElementById("meter").innerHTML =
+    `<span class="track">
+       <i class="p" style="width:${pct(t.pass)}"></i><i class="f" style="width:${pct(t.fail)}"></i>
+       <i class="b" style="width:${pct(t.block)}"></i><i class="x" style="width:${pct(t.na)}"></i>
+     </span>
+     <span>${t.pass}/${total} passed${t.fail?` · <strong style="color:var(--fail)">${t.fail} failed</strong>`:""}${t.block?` · ${t.block} blocked`:""}</span>`;
+}
+
+function codeBlock(text){
+  const wrap = el(`<div class="codewrap"><pre>${esc(text)}</pre><button class="copy" type="button">Copy</button></div>`);
+  wrap.querySelector(".copy").addEventListener("click", (e) => {
+    e.stopPropagation();
+    const btn = e.currentTarget;
+    const done = () => { btn.textContent = "Copied"; setTimeout(() => btn.textContent = "Copy", 1200); };
+    try {
+      navigator.clipboard.writeText(text).then(done, () => fallback());
+    } catch (_) { fallback(); }
+    function fallback(){
+      const ta = document.createElement("textarea");
+      ta.value = text; document.body.appendChild(ta); ta.select();
+      try { document.execCommand("copy"); done(); } catch (_) { btn.textContent = "Select manually"; }
+      document.body.removeChild(ta);
+    }
+  });
+  return wrap;
+}
+
+function renderCase(c){
+  const r = rec(c.id);
+  const st = r.state || "todo";
+  const cls = st === "todo" ? "" : " is-" + st;
+  const node = el(`<article class="case${cls}">
+    <header class="chead">
+      <span class="cid">${esc(c.id)}</span>
+      <span class="ctitle">${esc(c.title)}</span>
+      <span class="pri ${c.pri}">${c.pri}</span>
+      <span class="state ${st}">${LABEL[st]}</span>
+    </header>
+    <div class="cbody" hidden></div>
+  </article>`);
+
+  const head = node.querySelector(".chead");
+  const body = node.querySelector(".cbody");
+  const open = openIds.has(c.id) || expandedAll;
+  body.hidden = !open;
+
+  head.addEventListener("click", () => {
+    if (body.hidden) { openIds.add(c.id); } else { openIds.delete(c.id); }
+    body.hidden = !body.hidden;
+  });
+
+  const sec = (h, inner) => {
+    const s = el(`<div class="sec"><h4>${esc(h)}</h4></div>`);
+    if (typeof inner === "string") s.appendChild(el(`<div>${inner}</div>`)); else s.appendChild(inner);
+    body.appendChild(s);
+  };
+
+  if (c.pre) sec("Precondition", `<p>${c.pre}</p>`);
+  if (c.steps) sec("Steps", `<ol>${c.steps.map(s => `<li>${s}</li>`).join("")}</ol>`);
+  if (c.cmd) sec("Run this", codeBlock(c.cmd));
+
+  const boxes = [];
+  if (c.ui && c.ui !== "—") boxes.push(`<div><h4 style="margin:0 0 4px;font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--faint)">Expected — customer</h4>${c.ui}</div>`);
+  if (c.admin && c.admin !== "—") boxes.push(`<div><h4 style="margin:0 0 4px;font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--faint)">Expected — admin</h4>${c.admin}</div>`);
+  if (c.api) boxes.push(`<div><h4 style="margin:0 0 4px;font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--faint)">Expected — API</h4>${c.api}</div>`);
+  if (boxes.length) { const s = el(`<div class="sec"><div class="expect">${boxes.join("")}</div></div>`); body.appendChild(s); }
+
+  if (c.db && c.db !== "—") {
+    sec("Check the database", codeBlock(c.db));
+    if (c.expect) body.appendChild(el(`<div class="sec"><h4>Expected values</h4><p>${c.expect}</p></div>`));
+  } else if (c.expect) {
+    sec("Expected values", `<p>${c.expect}</p>`);
+  }
+
+  if (c.table) {
+    const t = c.table;
+    sec("Reference", `<div class="tablewrap"><table class="grid">
+      <thead><tr>${t.head.map(h => `<th>${esc(h)}</th>`).join("")}</tr></thead>
+      <tbody>${t.rows.map(r => `<tr>${r.map(x => `<td>${x}</td>`).join("")}</tr>`).join("")}</tbody>
+    </table></div>`);
+  }
+  if (c.why) body.appendChild(el(`<div class="sec"><div class="why">${c.why}</div></div>`));
+  if (c.note) body.appendChild(el(`<div class="sec"><h4>Note</h4><p>${c.note}</p></div>`));
+
+  const marks = el(`<div class="marks">
+    ${STATES.map(s => `<button type="button" class="${s}${r.state===s?" on":""}" data-s="${s}">${LABEL[s]}</button>`).join("")}
+    <textarea placeholder="Notes, actual result, screenshot name…">${esc(r.note||"")}</textarea>
+  </div>`);
+  marks.querySelectorAll("button").forEach(b => b.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const s = b.dataset.s;
+    r.state = (r.state === s) ? "" : s;
+    save(); openIds.add(c.id); render();
+  }));
+  const ta = marks.querySelector("textarea");
+  ta.addEventListener("click", e => e.stopPropagation());
+  ta.addEventListener("input", () => { r.note = ta.value; save(); });
+  body.appendChild(marks);
+
+  return node;
+}
+
+function render(){
+  renderNav();
+  renderMeter();
+  const wrap = document.getElementById("wrap");
+  wrap.innerHTML = "";
+  const q = document.getElementById("q").value.trim();
+
+  // A search spans EVERY tab. Searching inside one tab is close to useless when you
+  // are trying to find the case that covers a thing you just broke.
+  if (q) {
+    const hits = T.filter(matches);
+    wrap.appendChild(el(`<h2 class="tabhead">Search</h2>`));
+    wrap.appendChild(el(`<p class="tabsub">${hits.length} case${hits.length===1?"":"s"} matching
+      &ldquo;${esc(q)}&rdquo; across all ${TABS.length} flows.</p>`));
+    if (!hits.length) { wrap.appendChild(el(`<p class="empty">Nothing matches.</p>`)); return; }
+    let lastTab = null;
+    hits.forEach(c => {
+      if (c.tab !== lastTab) {
+        lastTab = c.tab;
+        const tb = TABS.find(t => t.id === c.tab);
+        wrap.appendChild(el(`<h3 style="margin:18px 0 8px;font-size:12px;text-transform:uppercase;
+          letter-spacing:.07em;color:var(--faint)">${esc(tb.name)}</h3>`));
+      }
+      wrap.appendChild(renderCase(c));
+    });
+    return;
+  }
+
+  const tab = TABS.find(t => t.id === active);
+  const all = casesFor(active);
+  const shown = all.filter(matches);
+  const t = tally(all);
+  wrap.appendChild(el(`<h2 class="tabhead">${esc(tab.name)}</h2>`));
+  wrap.appendChild(el(`<p class="tabsub">${esc(tab.blurb)}</p>`));
+  wrap.appendChild(el(`<p class="tabsub" style="margin-top:-12px;font-size:12px">
+    ${all.length} cases · ${t.pass} passed · ${t.fail} failed · ${t.block} blocked · ${t.na} n/a · ${t.todo} not run
+    ${shown.length !== all.length ? ` — showing ${shown.length} after filters` : ""}</p>`));
+  if (!shown.length) { wrap.appendChild(el(`<p class="empty">Nothing matches the current filters.</p>`)); return; }
+  shown.forEach(c => wrap.appendChild(renderCase(c)));
+}
+
+/* ---------- export ---------- */
+function download(name, text, type){
+  const blob = new Blob([text], {type});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = name;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+function toMarkdown(){
+  const t = tally(T);
+  let out = `# Kitab Shop — QA run\n\n_${new Date().toISOString()}_\n\n`;
+  out += `**${t.pass} passed · ${t.fail} failed · ${t.block} blocked · ${t.na} n/a · ${t.todo} not run** (of ${T.length})\n`;
+  if (t.fail) {
+    out += `\n## Failures\n\n`;
+    T.filter(c => (store[c.id]||{}).state === "fail").forEach(c => {
+      out += `- **${c.id}** ${c.title}\n`;
+      if ((store[c.id]||{}).note) out += `  - ${store[c.id].note.replace(/\n/g," ")}\n`;
+    });
+  }
+  TABS.forEach(tab => {
+    const list = casesFor(tab.id);
+    out += `\n## ${tab.name}\n\n| ID | Case | Priority | Result | Notes |\n|---|---|---|---|---|\n`;
+    list.forEach(c => {
+      const r = store[c.id] || {};
+      out += `| ${c.id} | ${c.title.replace(/\|/g,"\\|")} | ${c.pri} | ${LABEL[r.state||"todo"]} | ${(r.note||"").replace(/\n/g," ").replace(/\|/g,"\\|")} |\n`;
+    });
+  });
+  return out;
+}
+
+/* ---------- wiring ---------- */
+["q","fstate","fpri"].forEach(id => document.getElementById(id).addEventListener("input", render));
+document.getElementById("expand").addEventListener("click", (e) => {
+  expandedAll = !expandedAll;
+  if (!expandedAll) openIds.clear();
+  e.currentTarget.textContent = expandedAll ? "Collapse all" : "Expand all";
+  render();
+});
+document.getElementById("exportmd").addEventListener("click", () =>
+  download("kitab-qa-run.md", toMarkdown(), "text/markdown"));
+document.getElementById("exportjson").addEventListener("click", () =>
+  download("kitab-qa-run.json", JSON.stringify({
+    exportedAt: new Date().toISOString(),
+    summary: tally(T),
+    results: T.map(c => ({id:c.id, tab:c.tab, title:c.title, priority:c.pri,
+      state:(store[c.id]||{}).state||"todo", note:(store[c.id]||{}).note||""}))
+  }, null, 2), "application/json"));
+document.getElementById("reset").addEventListener("click", () => {
+  if (!confirm("Clear every recorded result and note? This cannot be undone.")) return;
+  store = {}; save(); render();
+});
+document.getElementById("theme").addEventListener("click", () => {
+  const root = document.documentElement;
+  const now = root.getAttribute("data-theme");
+  const next = now === "dark" ? "light" : now === "light" ? "" : "dark";
+  if (next) root.setAttribute("data-theme", next); else root.removeAttribute("data-theme");
+  try { localStorage.setItem(KEY + "-theme", next); } catch (_) {}
+});
+try {
+  const th = localStorage.getItem(KEY + "-theme");
+  if (th) document.documentElement.setAttribute("data-theme", th);
+} catch (_) {}
+
+document.getElementById("brandsub").textContent = T.length + " cases across " + TABS.length + " flows";
+render();
+})();
+</script>
+</body>
+</html>
